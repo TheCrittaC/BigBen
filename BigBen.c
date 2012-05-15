@@ -15,17 +15,17 @@ int getHour(){
 int main(){
   int i;
   int currentHour = getHour(); //sets the current hour so we can monitor it for changes
-  char input[1];
+  char input[5];
   int equal;
   while (0 == 0){
-    scanf("%s",&input);
-    equal = strncmp(input, ".time",100);
+    scanf("%s", &input);
+    equal = strcmp(input, ".time");
     if (equal == 0)
       printf("OI IT'S %d BONG\n", getHour());
     if (currentHour != getHour()){
       currentHour = getHour(); //changes the hour so we don't repeat the BONG
       for (i = 0; i < getHour(); i++)
-	//printf("BONG");
+	printf("BONG ");
       printf("\n");
     }
   }
