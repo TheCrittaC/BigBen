@@ -52,7 +52,16 @@ class Bot(ircbot.SingleServerIRCBot):
         source = event.source().split ('.')[0]
         if event.arguments() [0] == '.time':
             self.array.append('OI IT\'S ')
-            self.array.append(str(self.getHour()))
+            if self.getMin() > 45:
+                self.array.append('ALMOST ')
+                self.array.append(str(self.getHour() + 1))
+            else:
+                self.array.append(str(self.getHour()))
+            print self.getMin()
+            if (self.getMin() > 15 and self.getMin() <= 30):
+                self.array.append(' AND A QUARTER')
+            if (self.getMin() > 30 and self.getMin() <= 45):
+                self.array.append(' AND A HALF')
             self.array.append(' BONG')
             self.message = ''.join(self.array)
             self.connection.privmsg(self.channel, self.message)
@@ -62,7 +71,7 @@ class Bot(ircbot.SingleServerIRCBot):
 
 def main():
     if len(sys.argv) != 6:
-        print "Usage: BigBen <network[:port]> <channel> <nickname> <password> <ircname>" #prints usage
+        print "Usage: BigBen <network[:port]> <#channel> <nickname> <password> <ircname>" #prints usage
         sys.exit(1)
 
     s = sys.argv[1].split(":", 1)
