@@ -3,8 +3,7 @@ BigBen
 
 A simple IRC bot that will chime off the number of BONGs at the top of the hour.
 
-USAGE:
-./BigBenBot <network[:port]> <#channel> <nickname> <password> <ircname>
+USAGE: ./BigBenBot <network[:port]> <#channel> <nickname> <password> <ircname>
 
 This will cause the bot to connect to the given network, assume the given
 nickname and ircname, identify with nickserv using the given password, and join
