@@ -18,5 +18,6 @@ greatly reduce CPU strain.
 If the phrase ".time" is said in the channel, the bot will tell what time it is,
 using the phrase "OI IT'S X BONG", where X is the number of BONGs said at the
 top of the hour.
+The same thing happens if the message ".time" is messaged to the bot privately.
 
 If kicked, the bot will reconnect after 10 seconds have passed.
