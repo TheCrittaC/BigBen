@@ -17,7 +17,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.array = []
         self.message = '' #message for the .time command
     def getHour(self):
-        theTime = time.gmtime()#does things for GMT
+        theTime = time.gmtime() #does things for GMT
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
         shortHour += 1 #>Daylight savings time
