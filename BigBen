@@ -17,7 +17,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.array = []
         self.message = '' #message for the .time command
     def getHour(self):
-        theTime = time.gmtime() #does things for GMT
+        theTime = time.gmtime()#does things for GMT
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
         shortHour += 1 #>Daylight savings time
@@ -39,7 +39,7 @@ class Bot(ircbot.SingleServerIRCBot):
         message = ''
         while 1:
             if self.currentHour != self.getHour():
-                self.currentHour = self.getHour() #makes it so the bongs only go off once
+                self.currentHour = self.getHour() #makes it so the bongs only go off once by changing the current hour
                 for i in range (0, self.currentHour):
                     message += 'BONG '
                 self.connection.privmsg(self.channel, message)
