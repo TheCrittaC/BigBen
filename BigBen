@@ -6,10 +6,10 @@ import sys
 import thread
 
 class Bot(ircbot.SingleServerIRCBot):
-    def __init__ (self, channel, nick, server, port, password, name):
+    def __init__ (self, channels, nick, server, port, password, name):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
         self.nick = nick
-        self.channel = channel
+        self.mychannels = channels
         self.password = password
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
@@ -24,32 +24,33 @@ class Bot(ircbot.SingleServerIRCBot):
         return shortHour
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
-        channel = e.target
-        if kickedNick == self.nick:
-            time.sleep(10)
-            self.connection.join(self.channel) #rejoins 10 seconds after kick
+        if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
+            time.sleep(10)#waits 10 seconds
+            for channel in self.mychannels:
+                self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
     def getMin(self):
         theTime = time.gmtime()
         return theTime.tm_min
     
     def get_version(self):
-        return "BIGBEN BOT"
+        return "BIGBEN BOT" #CTCP VERSION reply
 
     def wait(self): #sounds off the hour
         message = ''
         while 1:
             if self.currentHour != self.getHour():
-                self.currentHour = self.getHour() #makes it so the bongs only go off once by changing the current hour
+                self.currentHour = self.getHour() #makes it so the bongs only go off once
                 for i in range (0, self.currentHour):
                     message += 'BONG '
-                self.connection.privmsg(self.channel, message)
+                for channel in self.channels:
+                    self.connection.privmsg(channel, message)
                 message = '' #resets the message
             time.sleep(1) #only checks once a second to greatly reduce CPU usage
     def on_welcome(self, connection, event):
-        connection.join(self.channel)
+        for channel in self.mychannels:
+            connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #idntify with nickserv
     def on_pubmsg (self, connection, event):
-        source = event.source().split ('.')[0]
         if event.arguments() [0] == '.time':
             self.array.append('OI IT\'S ')
             if self.getMin() > 45:
@@ -63,13 +64,13 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.array.append(' AND A HALF')
             self.array.append(' BONG')
             self.message = ''.join(self.array)
-            self.connection.privmsg(self.channel, self.message)
+            self.connection.privmsg(event.target(), self.message)
             self.message = ''
             self.array = [] #say OI IT'S x BONG
 
-    def on_privmsg (self, connection, event):
-        source = event.source().split ('.')[0]
-        if event.arguments() [0] == '.time':
+    def on_privmsg (self, connection, event):  #the user specifies the channel after the command
+        eventList = event.arguments()[0].split(' ')
+        if eventList[0] == '.time':
             self.array.append('OI IT\'S ')
             if self.getMin() > 45:
                 self.array.append('ALMOST ')
@@ -82,13 +83,13 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.array.append(' AND A HALF')
             self.array.append(' BONG')
             self.message = ''.join(self.array)
-            self.connection.privmsg(self.channel, self.message)
+            self.connection.privmsg(eventList[1], self.message)
             self.message = ''
             self.array = [] #say OI IT'S x BONG
 
 def main():
     if len(sys.argv) != 6:
-        print "Usage: BigBen <network[:port]> <#channel> <nickname> <password> <ircname>" #prints usage
+        print "Usage: BigBen <network[:port]> <#channel #channel2> <nickname> <password> <ircname>" #prints usage
         sys.exit(1)
 
     s = sys.argv[1].split(":", 1)
@@ -101,11 +102,11 @@ def main():
             sys.exit(1) #splits server and port
     else:
         port = 6667
-    channel = sys.argv[2] #what channel, # is required
+    channels = sys.argv[2].split(' ') #creates the list of channels, the # is required
     nick = sys.argv[3] #nick
     password = sys.argv[4] #nickserv password
     name = sys.argv[5] #ircname
-    bot = Bot(channel, nick, network, port, password, name)
+    bot = Bot(channels, nick, network, port, password, name)
     bot.start()
 
 if __name__ == "__main__":
