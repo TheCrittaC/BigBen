@@ -24,4 +24,4 @@ The same thing happens if the message ".time #channel" is messaged to the bot pr
 If kicked, the bot will reconnect after 10 seconds have passed.
 
 BigBen is licensed under the terms of the GNU General Public license, version
-2 or later, at the user's discresion.
+2 or later, at the user's discretion.
