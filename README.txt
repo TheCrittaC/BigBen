@@ -1,5 +1,9 @@
 BigBen
-======
+
+written by Christopher T. Lemay
+requires python-irclib
+===============================
+
 
 A simple IRC bot that will chime off the number of BONGs at the top of the hour.
 
@@ -20,6 +24,9 @@ If the phrase ".time" is said in the channel, the bot will tell what time it is,
 using the phrase "OI IT'S X BONG", where X is the number of BONGs said at the
 top of the hour.
 The same thing happens if the message ".time #channel" is messaged to the bot privately.
+
+If the bot receives a private message of ".speak #channel TEXT_HERE", it will
+echo the text back to the channel specified.
 
 If kicked, the bot will reconnect after 10 seconds have passed.
 

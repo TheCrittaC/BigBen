@@ -86,6 +86,14 @@ class Bot(ircbot.SingleServerIRCBot):
             self.connection.privmsg(eventList[1], self.message)
             self.message = ''
             self.array = [] #say OI IT'S x BONG
+        if eventList[0] == '.speak':
+            for i in range (2, len(eventList)): #starts at index 2 so we don't say the channel too
+                self.array.append(eventList[i])
+                self.array.append(' ') #creates a space between the words
+            self.message = ''.join(self.array)
+            self.connection.privmsg(eventList[1], self.message)
+            self.message = ''
+            self.array = [] #say what we say to the bot back to the channel
 
 def main():
     if len(sys.argv) != 6:
