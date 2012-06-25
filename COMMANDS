@@ -1,0 +1,19 @@
+#This file contains commands for the BigBen IRC bot.
+#Network:
+irc.yournetwork.net
+#port
+6667
+#Channels:
+#yourchannel1 #yourchannel2
+#Nick:
+yourNick
+#Nickserv Password
+yourPassword
+#ircname:
+Benny
+#public time command
+.time
+#private time command
+.time
+#say command
+.speak
