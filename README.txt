@@ -7,11 +7,16 @@ requires python-irclib
 
 A simple IRC bot that will chime off the number of BONGs at the top of the hour.
 
-USAGE: ./BigBenBot <network[:port]> <#channel1 #channel2> <nickname> <password> <ircname>
+USAGE: ./BigBen <network[:port]> <#channel1 #channel2> <nickname> <password> <ircname>
 
-This will cause the bot to connect to the given network, assume the given
+OR
+./BigBen -c
+
+The first set of commands will cause the bot to connect to the given network, assume the given
 nickname and ircname, identify with nickserv using the given password, and join
 the given channels.
+
+The second command will read the options from a file.
 
 At the top of the hour, the bot will chime off the same number of BONGs that Big
 Ben does. Thus the bot is set to GMT. This happens in all channels that BigBen

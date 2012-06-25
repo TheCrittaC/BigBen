@@ -5,6 +5,10 @@ import time
 import sys
 import thread
 
+pubTimeCommand = ".time"
+privTimeCommand = ".time"
+sayCommand = ".speak"
+
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
@@ -51,7 +55,7 @@ class Bot(ircbot.SingleServerIRCBot):
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #idntify with nickserv
     def on_pubmsg (self, connection, event):
-        if event.arguments() [0] == '.time':
+        if event.arguments() [0] == pubTimeCommand:
             self.array.append('OI IT\'S ')
             if self.getMin() > 45:
                 self.array.append('ALMOST ')
@@ -70,7 +74,7 @@ class Bot(ircbot.SingleServerIRCBot):
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
-        if eventList[0] == '.time':
+        if eventList[0] == privTimeCommand:
             self.array.append('OI IT\'S ')
             if self.getMin() > 45:
                 self.array.append('ALMOST ')
@@ -86,7 +90,7 @@ class Bot(ircbot.SingleServerIRCBot):
             self.connection.privmsg(eventList[1], self.message)
             self.message = ''
             self.array = [] #say OI IT'S x BONG
-        if eventList[0] == '.speak':
+        if eventList[0] == sayCommand:
             for i in range (2, len(eventList)): #starts at index 2 so we don't say the channel too
                 self.array.append(eventList[i])
                 self.array.append(' ') #creates a space between the words
@@ -96,24 +100,43 @@ class Bot(ircbot.SingleServerIRCBot):
             self.array = [] #say what we say to the bot back to the channel
 
 def main():
-    if len(sys.argv) != 6:
-        print "Usage: BigBen <network[:port]> <#channel #channel2> <nickname> <password> <ircname>" #prints usage
+    global pubTimeCommand
+    global privTimeCommand
+    global sayCommand # need to declare these as global so they can be modified
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "-c":
+            arguments = []
+            file = open ("COMMANDS", "r")
+            for line in file.readlines():
+                arguments.append(line.strip('\n'))#remove the newlines from the list
+            channels = arguments[6].split(' ')
+            nick = arguments[8]
+            network = arguments[2]
+            port = int(arguments[4])
+            password = arguments[10]
+            name = arguments[12]
+            pubTimeCommand = arguments[14]
+            privTimeCommand = arguments[16]
+            sayCommand = arguments[18]      
+    elif len(sys.argv) != 6:
+        print "Usage: BigBen <network[:port]> <#channel #channel2> <nickname> <password> <ircname>"
+        print "OR BigBen -c" #prints usage
         sys.exit(1)
-
-    s = sys.argv[1].split(":", 1)
-    network = s[0]
-    if len(s) == 2:
-        try:
-            port = int(s[1])
-        except ValueError:
-            print "Error: Erroneous port."
+    else:  
+        s = sys.argv[1].split(":", 1)
+        network = s[0]
+        if len(s) == 2:
+            try:
+                port = int(s[1])
+            except ValueError:
+                print "Error: Erroneous port."
             sys.exit(1) #splits server and port
-    else:
-        port = 6667
-    channels = sys.argv[2].split(' ') #creates the list of channels, the # is required
-    nick = sys.argv[3] #nick
-    password = sys.argv[4] #nickserv password
-    name = sys.argv[5] #ircname
+        else:
+            port = 6667
+            channels = sys.argv[2].split(' ') #creates the list of channels, the # is required
+            nick = sys.argv[3] #nick
+            password = sys.argv[4] #nickserv password
+            name = sys.argv[5] #ircname
     bot = Bot(channels, nick, network, port, password, name)
     bot.start()
 
