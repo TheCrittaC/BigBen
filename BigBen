@@ -4,6 +4,7 @@ import ircbot
 import time
 import sys
 import thread
+import os
 
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
@@ -106,7 +107,7 @@ def main():
     if len(sys.argv) == 2:
         if sys.argv[1] == "-c":
             arguments = []
-            file = open ("COMMANDS", "r")
+            file = open (sys.path[0] + "/COMMANDS", "r")
             for line in file.readlines():
                 arguments.append(line.strip('\n'))#remove the newlines from the list
             channels = arguments[6].split(' ')
