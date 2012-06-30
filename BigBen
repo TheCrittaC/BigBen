@@ -26,7 +26,7 @@ class Bot(ircbot.SingleServerIRCBot):
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
         shortHour += 1 #>Daylight savings time
-        return shortHour
+        return str(shortHour)
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
@@ -35,7 +35,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
     def getMin(self):
         theTime = time.gmtime()
-        return theTime.tm_min
+        return str(theTime.tm_min)
     
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
@@ -55,42 +55,20 @@ class Bot(ircbot.SingleServerIRCBot):
         for channel in self.mychannels:
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #idntify with nickserv
+
+    def formulateMessage(self):
+        if self.getMin() == 0:
+            return "OI IT'S " + self.getHour() + " BONG"
+        return "OI IT'S " + self.getMin() + " BITS PAST " + self.getHour() + " BONG"
     def on_pubmsg (self, connection, event):
         if event.arguments() [0] == pubTimeCommand:
-            self.array.append('OI IT\'S ')
-            if self.getMin() > 45:
-                self.array.append('ALMOST ')
-                self.array.append(str(self.getHour() + 1))
-            else:
-                self.array.append(str(self.getHour()))
-            if (self.getMin() > 15 and self.getMin() <= 30):
-                self.array.append(' AND A QUARTER')
-            if (self.getMin() > 30 and self.getMin() <= 45):
-                self.array.append(' AND A HALF')
-            self.array.append(' BONG')
-            self.message = ''.join(self.array)
-            self.connection.privmsg(event.target(), self.message)
-            self.message = ''
-            self.array = [] #say OI IT'S x BONG
+            self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
+
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
         if eventList[0] == privTimeCommand:
-            self.array.append('OI IT\'S ')
-            if self.getMin() > 45:
-                self.array.append('ALMOST ')
-                self.array.append(str(self.getHour() + 1))
-            else:
-                self.array.append(str(self.getHour()))
-            if (self.getMin() > 15 and self.getMin() <= 30):
-                self.array.append(' AND A QUARTER')
-            if (self.getMin() > 30 and self.getMin() <= 45):
-                self.array.append(' AND A HALF')
-            self.array.append(' BONG')
-            self.message = ''.join(self.array)
-            self.connection.privmsg(eventList[1], self.message)
-            self.message = ''
-            self.array = [] #say OI IT'S x BONG
+            self.connection.privmsg(eventList[1], self.formulateMessage()) #Say what time it is
         if eventList[0] == sayCommand:
             for i in range (2, len(eventList)): #starts at index 2 so we don't say the channel too
                 self.array.append(eventList[i])
