@@ -26,7 +26,7 @@ class Bot(ircbot.SingleServerIRCBot):
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
         shortHour += 1 #>Daylight savings time
-        return str(shortHour)
+        return shortHour
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
@@ -35,7 +35,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
     def getMin(self):
         theTime = time.gmtime()
-        return str(theTime.tm_min)
+        return theTime.tm_min
     
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
@@ -58,8 +58,8 @@ class Bot(ircbot.SingleServerIRCBot):
 
     def formulateMessage(self):
         if self.getMin() == 0:
-            return "OI IT'S " + self.getHour() + " BONG"
-        return "OI IT'S " + self.getMin() + " BITS PAST " + self.getHour() + " BONG"
+            return "OI IT'S " + str(self.getHour()) + " BONG"
+        return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
     def on_pubmsg (self, connection, event):
         if event.arguments() [0] == pubTimeCommand:
             self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
