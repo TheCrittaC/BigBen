@@ -59,6 +59,8 @@ class Bot(ircbot.SingleServerIRCBot):
     def formulateMessage(self):
         if self.getMin() == 0:
             return "OI IT'S " + str(self.getHour()) + " BONG"
+        elif self.getMin() == 1:
+            return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
     def on_pubmsg (self, connection, event):
         if event.arguments() [0] == pubTimeCommand:
