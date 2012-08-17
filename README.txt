@@ -33,6 +33,9 @@ The same thing happens if the message ".time #channel" is messaged to the bot pr
 If the bot receives a private message of ".speak #channel TEXT_HERE", it will
 echo the text back to the channel specified.
 
+If ".ping" (or any other message starting with '.' and ending with 'ing') is said in any
+channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
+
 If kicked, the bot will reconnect after 10 seconds have passed.
 
 BigBen is licensed under the terms of the GNU General Public license, version
