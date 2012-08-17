@@ -67,7 +67,7 @@ class Bot(ircbot.SingleServerIRCBot):
         if message == pubTimeCommand:
             self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
         elif message.startswith(".") and message.endswith("ing"):
-            response = message.split('ing')[0]
+            response = message[:-3] #response starts as everything but the 'ing'
             response = response + "ong"
             response = response.lstrip('.')
             self.connection.privmsg(event.target(), response)
