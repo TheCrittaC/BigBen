@@ -67,10 +67,11 @@ class Bot(ircbot.SingleServerIRCBot):
         if message == pubTimeCommand:
             self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
         elif message.startswith(".") and message.endswith("ing"):
-            response = message[:-3] #response starts as everything but the 'ing'
-            response = response + "ong"
-            response = response.lstrip('.')
-            self.connection.privmsg(event.target(), response)
+            if " " not in message and ".bing" not in message: # doesn't let the bot bong or respond to commands with a space in them
+                response = message[:-3] #response starts as everything but the 'ing'
+                response = response + "ong"
+                response = response.lstrip('.')
+                self.connection.privmsg(event.target(), response)
 
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
