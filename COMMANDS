@@ -17,3 +17,5 @@ Benny
 .time
 #say command
 .speak
+#PM time command
+.ptime

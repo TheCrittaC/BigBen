@@ -9,6 +9,7 @@ import os
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
+PMTimeCommand = ".ptime"
 
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name):
@@ -66,6 +67,8 @@ class Bot(ircbot.SingleServerIRCBot):
         message = event.arguments()[0]
         if message == pubTimeCommand:
             self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
+        elif message == PMTimeCommand:
+            self.connection.privmsg(event.source().split('!')[0], self.formulateMessage()) #tell the user who says the PMTimeCommand what time it is
         elif message.startswith(".") and message.endswith("ing"):
             if " " not in message and ".bing" not in message: # doesn't let the bot bong or respond to commands with a space in them
                 response = message[:-3] #response starts as everything but the 'ing'
@@ -90,7 +93,8 @@ class Bot(ircbot.SingleServerIRCBot):
 def main():
     global pubTimeCommand
     global privTimeCommand
-    global sayCommand # need to declare these as global so they can be modified
+    global sayCommand
+    global PMTimeCommand # need to declare these as global so they can be modified
     if len(sys.argv) == 2:
         if sys.argv[1] == "-c":
             arguments = []
@@ -105,7 +109,8 @@ def main():
             name = arguments[12]
             pubTimeCommand = arguments[14]
             privTimeCommand = arguments[16]
-            sayCommand = arguments[18]      
+            sayCommand = arguments[18]
+            PMTimeCommand = arguments[20]
     elif len(sys.argv) != 6:
         print "Usage: BigBen \"<network[:port]>\" \"<#channel #channel2>\" \"<nickname>\" \"<password>\" \"<ircname>\""
         print "OR BigBen -c" #prints usage
