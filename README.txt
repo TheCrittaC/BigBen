@@ -29,6 +29,8 @@ If the phrase ".time" is said in the channel, the bot will tell what time it is,
 using the phrase "OI IT'S X BONG", where X is the number of BONGs said at the
 top of the hour.
 The same thing happens if the message ".time #channel" is messaged to the bot privately.
+If the phrase ".ptime" is said in the channel, the bot will /notice the person
+who said such a thing with the current time.
 
 If the bot receives a private message of ".speak #channel TEXT_HERE", it will
 echo the text back to the channel specified.
