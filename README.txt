@@ -40,5 +40,9 @@ channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
 
 If kicked, the bot will reconnect after 10 seconds have passed.
 
+There is a function to log the number of users in each channel. If enabled,
+it will write the number of users in each channel to the given file. This updates with
+each join and part, and every fifteen seconds.
+
 BigBen is licensed under the terms of the GNU General Public license, version
 2 or later, at the user's discretion.

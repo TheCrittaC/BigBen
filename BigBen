@@ -21,7 +21,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
-        thread.start new_thread(self.updateUsers, ()) #updates the amount of users in a different thread
+        thread.start_new_thread(self.updateUsers, ()) #updates the amount of users in a different thread
         self.array = []
         self.message = '' #message for the .time command
     def getHour(self):
@@ -59,7 +59,7 @@ class Bot(ircbot.SingleServerIRCBot):
         outfile = open(logfile, 'w')
         for channel in self.channels:
             channelObject = self.channels [ channel ]
-            data =  channel + ' '  + str ( len ( channelObject.users() ))
+            data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
             outfile.write(data)
         outfile.close()
 
