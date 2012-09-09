@@ -19,3 +19,7 @@ Benny
 .speak
 #PM time command
 .ptime
+#log number of users in channel? (just put yes or no here)
+no
+#file to write the user data in?
+~/users.txt

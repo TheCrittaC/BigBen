@@ -10,7 +10,8 @@ pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
 PMTimeCommand = ".ptime"
-
+log = "no"
+logfile = "users.txt"
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
@@ -20,6 +21,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
+        thread.start new_thread(self.updateUsers, ()) #updates the amount of users in a different thread
         self.array = []
         self.message = '' #message for the .time command
     def getHour(self):
@@ -52,10 +54,34 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.connection.privmsg(channel, message)
                 message = '' #resets the message
             time.sleep(1) #only checks once a second to greatly reduce CPU usage
+
+    def logUsers(self):
+        outfile = open(logfile, 'w')
+        for channel in self.channels:
+            channelObject = self.channels [ channel ]
+            data =  channel + ' '  + str ( len ( channelObject.users() ))
+            outfile.write(data)
+        outfile.close()
+
+    def updateUsers(self):
+        while 1:
+            self.logUsers()
+            time.sleep(15) #updates the user list once every 15 seconds
+    
     def on_welcome(self, connection, event):
         for channel in self.mychannels:
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #idntify with nickserv
+        if log == 'yes':
+            self.logUsers()
+
+    def on_join (self, connection, event):
+        if log == 'yes':
+            self.logUsers()
+
+    def on_part (self, connection, event):
+        if log == 'yes':
+            self.logUsers()
 
     def formulateMessage(self):
         if self.getMin() == 0:
@@ -65,6 +91,7 @@ class Bot(ircbot.SingleServerIRCBot):
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
+        source = event.source().split('!')[0]
         if message == pubTimeCommand:
             self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
         elif message == PMTimeCommand:
@@ -75,8 +102,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 response = response + "ong"
                 response = response.lstrip('.')
                 self.connection.privmsg(event.target(), response)
-
-
+            
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
         if eventList[0] == privTimeCommand:
@@ -90,11 +116,15 @@ class Bot(ircbot.SingleServerIRCBot):
             self.message = ''
             self.array = [] #say what we say to the bot back to the channel
 
+            
+            
 def main():
     global pubTimeCommand
     global privTimeCommand
     global sayCommand
-    global PMTimeCommand # need to declare these as global so they can be modified
+    global PMTimeCommand
+    global log
+    global logfile# need to declare these as global so they can be modified
     if len(sys.argv) == 2:
         if sys.argv[1] == "-c":
             arguments = []
@@ -111,6 +141,8 @@ def main():
             privTimeCommand = arguments[16]
             sayCommand = arguments[18]
             PMTimeCommand = arguments[20]
+            log = arguments[22]
+            logfile = arguments[24]
     elif len(sys.argv) != 6:
         print "Usage: BigBen \"<network[:port]>\" \"<#channel #channel2>\" \"<nickname>\" \"<password>\" \"<ircname>\""
         print "OR BigBen -c" #prints usage
