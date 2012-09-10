@@ -12,6 +12,7 @@ sayCommand = ".speak"
 PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
+amounts = []
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
@@ -21,7 +22,8 @@ class Bot(ircbot.SingleServerIRCBot):
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
-        thread.start_new_thread(self.updateUsers, ()) #updates the amount of users in a different thread
+        if log == "yes":
+            thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
         self.message = '' #message for the .time command
     def getHour(self):
@@ -43,6 +45,15 @@ class Bot(ircbot.SingleServerIRCBot):
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
 
+    def setupLog(self):
+        time.sleep(1) #gives the bot time to join channels before setting up the log
+        for channel in self.channels:
+            channelObject = self.channels [ channel ]
+            data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
+            amounts.append(data)
+        self.logUsers()
+        
+
     def wait(self): #sounds off the hour
         message = ''
         while 1:
@@ -57,31 +68,32 @@ class Bot(ircbot.SingleServerIRCBot):
 
     def logUsers(self):
         outfile = open(logfile, 'w')
-        for channel in self.channels:
-            time.sleep(1)
-            channelObject = self.channels [ channel ]
-            data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
-            outfile.write(data)
+        for entry in amounts:
+            outfile.write(entry)
+            outfile.write('\n')
         outfile.close()
 
-    def updateUsers(self):
-        while 1:
-            self.logUsers()
-            time.sleep(15) #updates the user list once every 15 seconds
-    
     def on_welcome(self, connection, event):
         for channel in self.mychannels:
             connection.join(channel)
-        self.connection.privmsg("nickserv", "identify "+self.password) #idntify with nickserv
-        if log == 'yes':
-            self.logUsers()
-
+        self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
+        
+                
     def on_join (self, connection, event):
         if log == 'yes':
+            for entry in amounts:
+                if entry.split(' ')[0] == event.target():
+                    newEntry = event.target() + ' ' + str(int(entry.split(' ')[1]) + 1)
+                    amounts[amounts.index(entry)] = newEntry
+                    # increments the amount of people in the given channel by 1
             self.logUsers()
-
     def on_part (self, connection, event):
         if log == 'yes':
+            for entry in amounts:
+                if entry.split(' ')[0] == event.target():
+                    newEntry = event.target() + ' ' + str(int(entry.split(' ')[1]) - 1)
+                    amounts[amounts.index(entry)] = newEntry
+                    #decrements the amount of people in the given channel by 1
             self.logUsers()
 
     def formulateMessage(self):
@@ -125,7 +137,8 @@ def main():
     global sayCommand
     global PMTimeCommand
     global log
-    global logfile# need to declare these as global so they can be modified
+    global logfile
+    global amounts# need to declare these as global so they can be modified
     if len(sys.argv) == 2:
         if sys.argv[1] == "-c":
             arguments = []
