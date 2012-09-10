@@ -58,6 +58,7 @@ class Bot(ircbot.SingleServerIRCBot):
     def logUsers(self):
         outfile = open(logfile, 'w')
         for channel in self.channels:
+            time.sleep(1)
             channelObject = self.channels [ channel ]
             data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
             outfile.write(data)
