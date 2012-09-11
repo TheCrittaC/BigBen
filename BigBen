@@ -52,11 +52,11 @@ class Bot(ircbot.SingleServerIRCBot):
         outfile.close() #creates logfile
         while 1: #run in a loop to keep updating list every 10 seconds
             time.sleep (1) #waits one second for the bot to join all channels, here for initial run
-    #        self.amounts = [] #clears the variable with the amounts per channel
             for channel in self.channels:
                 self.connection.send_raw("LIST " + channel)
+                time.sleep(10) #waits so we don't overload the server
             self.logUsers(self.amounts)
-            time.sleep (9) #waits another 9 seconds
+            
 
     def wait(self): #sounds off the hour
         message = ''
@@ -87,7 +87,10 @@ class Bot(ircbot.SingleServerIRCBot):
         self.amounts = []
 
     def on_list(self, connection, event):
-        self.amounts.append (str(event.arguments()[0]) + ' ' + str(event.arguments()[1]))
+        data = (str(event.arguments()[0]) + ' ' + str(event.arguments()[1]))
+        self.amounts.append (data)
+        
+        
                
     def on_welcome(self, connection, event):
         for channel in self.mychannels:
