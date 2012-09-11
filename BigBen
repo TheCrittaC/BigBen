@@ -26,6 +26,7 @@ class Bot(ircbot.SingleServerIRCBot):
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
         self.message = '' #message for the .time command
+
     def getHour(self):
         theTime = time.gmtime()#does things for GMT
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
@@ -46,13 +47,25 @@ class Bot(ircbot.SingleServerIRCBot):
         return "BIGBEN BOT" #CTCP VERSION reply
 
     def setupLog(self):
-        time.sleep(1) #gives the bot time to join channels before setting up the log
+        while 1: #run in a loop to keep updating list every 10 seconds
+            time.sleep (1) #waits one second for the bot to join all channels, here for initial run
+            amounts = [] #clears the variable with the amounts per channel
+            for channel in self.channels:
+                channelObject = self.channels [ channel ]
+                data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
+                amounts.append(data)
+            self.logUsers(amounts)
+            time.sleep (9) #waits another 9 seconds
+
+    
+    def updateLog(self):
+        amounts = [] #clears the variable with the amounts per channel
         for channel in self.channels:
             channelObject = self.channels [ channel ]
             data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
             amounts.append(data)
-        self.logUsers()
-        
+        print amounts
+        self.logUsers(amounts)
 
     def wait(self): #sounds off the hour
         message = ''
@@ -66,11 +79,18 @@ class Bot(ircbot.SingleServerIRCBot):
                 message = '' #resets the message
             time.sleep(1) #only checks once a second to greatly reduce CPU usage
 
-    def logUsers(self):
-        outfile = open(logfile, 'w')
-        for entry in amounts:
-            outfile.write(entry)
-            outfile.write('\n')
+    def logUsers(self, writeMe):
+        write = 0
+        outfile = open(logfile, 'r')
+        for entry in writeMe:
+            if entry != outfile.readline():
+                write = 1
+                outfile.close()
+                break # only writes if the file has changed
+        if write == 1:
+            outfile = open(logfile, 'w')
+            for entry in writeMe:
+                outfile.write(entry) # write the file with new data
         outfile.close()
 
     def on_welcome(self, connection, event):
@@ -78,24 +98,6 @@ class Bot(ircbot.SingleServerIRCBot):
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
         
-                
-    def on_join (self, connection, event):
-        if log == 'yes':
-            for entry in amounts:
-                if entry.split(' ')[0] == event.target():
-                    newEntry = event.target() + ' ' + str(int(entry.split(' ')[1]) + 1)
-                    amounts[amounts.index(entry)] = newEntry
-                    # increments the amount of people in the given channel by 1
-            self.logUsers()
-    def on_part (self, connection, event):
-        if log == 'yes':
-            for entry in amounts:
-                if entry.split(' ')[0] == event.target():
-                    newEntry = event.target() + ' ' + str(int(entry.split(' ')[1]) - 1)
-                    amounts[amounts.index(entry)] = newEntry
-                    #decrements the amount of people in the given channel by 1
-            self.logUsers()
-
     def formulateMessage(self):
         if self.getMin() == 0:
             return "OI IT'S " + str(self.getHour()) + " BONG"
