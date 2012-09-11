@@ -21,6 +21,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.password = password
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
+        self.amounts = amounts
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
@@ -47,25 +48,15 @@ class Bot(ircbot.SingleServerIRCBot):
         return "BIGBEN BOT" #CTCP VERSION reply
 
     def setupLog(self):
+        outfile = open(logfile, "w")
+        outfile.close() #creates logfile
         while 1: #run in a loop to keep updating list every 10 seconds
             time.sleep (1) #waits one second for the bot to join all channels, here for initial run
-            amounts = [] #clears the variable with the amounts per channel
+    #        self.amounts = [] #clears the variable with the amounts per channel
             for channel in self.channels:
-                channelObject = self.channels [ channel ]
-                data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
-                amounts.append(data)
-            self.logUsers(amounts)
+                self.connection.send_raw("LIST " + channel)
+            self.logUsers(self.amounts)
             time.sleep (9) #waits another 9 seconds
-
-    
-    def updateLog(self):
-        amounts = [] #clears the variable with the amounts per channel
-        for channel in self.channels:
-            channelObject = self.channels [ channel ]
-            data =  channel + ' '  + str ( len ( channelObject.users() )) + '\n'
-            amounts.append(data)
-        print amounts
-        self.logUsers(amounts)
 
     def wait(self): #sounds off the hour
         message = ''
@@ -83,16 +74,21 @@ class Bot(ircbot.SingleServerIRCBot):
         write = 0
         outfile = open(logfile, 'r')
         for entry in writeMe:
-            if entry != outfile.readline():
+            if entry != (outfile.readline().rstrip('\n')):
                 write = 1
                 outfile.close()
                 break # only writes if the file has changed
         if write == 1:
             outfile = open(logfile, 'w')
             for entry in writeMe:
-                outfile.write(entry) # write the file with new data
+                outfile.write(entry)
+                outfile.write('\n')
         outfile.close()
+        self.amounts = []
 
+    def on_list(self, connection, event):
+        self.amounts.append (str(event.arguments()[0]) + ' ' + str(event.arguments()[1]))
+               
     def on_welcome(self, connection, event):
         for channel in self.mychannels:
             connection.join(channel)
