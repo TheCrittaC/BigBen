@@ -40,6 +40,10 @@ channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
 
 If kicked, the bot will reconnect after 10 seconds have passed.
 
+If a message in any channel starts with the bot's nick and ends with '??' (for example,
+"BigBen, am I ever going to get married??"), the bot will give a random response from the
+RESPONSES file.
+
 There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with
 each join and part, and every fifteen seconds.

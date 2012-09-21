@@ -5,6 +5,7 @@ import time
 import sys
 import thread
 import os
+import random
 
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
@@ -103,6 +104,14 @@ class Bot(ircbot.SingleServerIRCBot):
         elif self.getMin() == 1:
             return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
+
+    def eightBall(self):
+        messages = open("RESPONSES", 'r')
+        messagesFile = messages.readlines()
+        lines = len(messagesFile)
+        lineNum = random.randint(0, lines - 1)
+        return messagesFile[lineNum - 1].rstrip('\n')
+    
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
@@ -116,6 +125,8 @@ class Bot(ircbot.SingleServerIRCBot):
                 response = response + "ong"
                 response = response.lstrip('.')
                 self.connection.privmsg(event.target(), response)
+        elif message.startswith(self.nick) and message.endswith("??"):
+            self.connection.privmsg(event.target(), self.eightBall())
             
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
