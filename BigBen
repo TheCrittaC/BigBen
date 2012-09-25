@@ -110,6 +110,7 @@ class Bot(ircbot.SingleServerIRCBot):
         messagesFile = messages.readlines()
         lines = len(messagesFile)
         lineNum = random.randint(0, lines - 1)
+        messages.close()
         return messagesFile[lineNum - 1].rstrip('\n')
     
     def on_pubmsg (self, connection, event):
