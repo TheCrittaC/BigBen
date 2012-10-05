@@ -23,3 +23,5 @@ Benny
 no
 #file to write the user data in?
 ~/users.txt
+#Channels not to put page titles in
+#
