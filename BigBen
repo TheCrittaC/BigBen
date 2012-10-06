@@ -133,7 +133,7 @@ class Bot(ircbot.SingleServerIRCBot):
             messageList = message.split(' ')
             for element in messageList:
                 if element.startswith("http"):
-                    title = commands.getoutput("curl -s " + element + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
+                    title = commands.getoutput("curl -s " + "\"" + element + "\"" + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
                     if not title == "":
                         if not event.target() in self.silentChannels:
                             self.connection.privmsg(event.target(), "Title: " + title)
