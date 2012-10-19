@@ -15,7 +15,6 @@ PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
 amounts = []
-HTMLParserObject = HTMLParser.HTMLParser()
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name, silentChannels):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
@@ -138,7 +137,7 @@ class Bot(ircbot.SingleServerIRCBot):
                     title = commands.getoutput("curl -s " + "\"" + element + "\"" + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
                     if not title == "":
                         if not event.target() in self.silentChannels:
-                            self.connection.privmsg(event.target(), "Title: " + HTMLParserObject.unescape(title))
+                            self.connection.privmsg(event.target(), "Title: " + title)
                         
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
