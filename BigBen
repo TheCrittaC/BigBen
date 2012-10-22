@@ -30,6 +30,10 @@ class Bot(ircbot.SingleServerIRCBot):
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
         self.message = '' #message for the .time command
+        customResponses = open("CUSTOMRESPONSES", "r")
+        self.responsesFile = customResponses.readlines()
+        customResponses.close()
+        self.custom = 0;
 
     def getHour(self):
         theTime = time.gmtime()#does things for GMT
@@ -107,7 +111,7 @@ class Bot(ircbot.SingleServerIRCBot):
             return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
 
-    def eightBall(self):
+    def magicConch(self):
         messages = open("RESPONSES", 'r')
         messagesFile = messages.readlines()
         lines = len(messagesFile)
@@ -129,7 +133,13 @@ class Bot(ircbot.SingleServerIRCBot):
                 response = response.lstrip('.')
                 self.connection.privmsg(event.target(), response)
         elif message.startswith(self.nick) and message.endswith("??"):
-            self.connection.privmsg(event.target(), self.eightBall())
+            for e in self.responsesFile:
+                if message.lstrip(self.nick).lstrip(",: ").rstrip(" ??") == e.split("::")[0]:
+                    self.connection.privmsg(event.target(), e.split("::")[1])
+                    self.custom = 1 # tells the bot we have a custom reply
+            if self.custom == 0: # if we have not had a custom reply
+                self.connection.privmsg(event.target(), self.magicConch())
+            self.custom = 0 # resets the custom reply
         if "http://" in message or "https://" in message:
             messageList = message.split(' ')
             for element in messageList:

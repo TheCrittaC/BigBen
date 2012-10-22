@@ -44,6 +44,10 @@ If a message in any channel starts with the bot's nick and ends with '??' (for e
 "BigBen, am I ever going to get married??"), the bot will give a random response from the
 RESPONSES file.
 
+If the message, minus the leading nick and trailing question mark, is in the
+CUSTOMRESPONSES file before the "::" in its line, the message after the "::"
+will be sent to the channel.
+
 There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with
 each join and part, and every fifteen seconds.
