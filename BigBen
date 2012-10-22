@@ -7,7 +7,6 @@ import thread
 import os
 import random
 import commands
-import HTMLParser
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
@@ -118,6 +117,13 @@ class Bot(ircbot.SingleServerIRCBot):
         lineNum = random.randint(0, lines - 1)
         messages.close()
         return messagesFile[lineNum - 1].rstrip('\n')
+        
+    def sayWebpageTitle(self,url,event):
+        # Find a better way to do this.
+        title = commands.getoutput("curl -s " + "\"" + url + "\"" + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
+        if not title == "":
+            self.connection.privmsg(event.target(), "Title: " + title)
+        return
     
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
@@ -141,13 +147,11 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.connection.privmsg(event.target(), self.magicConch())
             self.custom = 0 # resets the custom reply
         if "http://" in message or "https://" in message:
-            messageList = message.split(' ')
-            for element in messageList:
-                if element.startswith("http"):
-                    title = commands.getoutput("curl -s " + "\"" + element + "\"" + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
-                    if not title == "":
-                        if not event.target() in self.silentChannels:
-                            self.connection.privmsg(event.target(), "Title: " + title)
+            if not event.target() in self.silentChannels:
+                messageList = message.split(' ')
+                for element in messageList:
+                    if element.startswith(("http://","https://"), ):
+                        thread.start_new_thread(self.sayWebpageTitle, (element,event))
                         
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
