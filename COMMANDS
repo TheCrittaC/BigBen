@@ -1,27 +1,27 @@
 #This file contains commands for the BigBen IRC bot.
 #Network:
-irc.yournetwork.net
+irc.rizon.net
 #port
 6667
 #Channels:
-#yourchannel1 #yourchannel2
+#testificate
 #Nick:
-yourNick
+aoeuiben
 #Nickserv Password
-yourPassword
+roger
 #ircname:
 Benny
 #public time command
-.time
+.34,398aouaoe
 #private time command
-.time
+.bong
 #say command
-.speak
+.says
 #PM time command
 .ptime
 #log number of users in channel? (just put yes or no here)
-no
+yes
 #file to write the user data in?
-~/users.txt
+users.txt
 #Channels not to put page titles in
 #

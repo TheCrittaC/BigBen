@@ -7,6 +7,11 @@ import thread
 import os
 import random
 import commands
+import urllib
+import BeautifulSoup
+import HTMLParser
+from lxml import html
+from urllib2 import urlopen
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
@@ -14,6 +19,8 @@ PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
 amounts = []
+HTMLParserObject = HTMLParser.HTMLParser()
+
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name, silentChannels):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
@@ -119,11 +126,17 @@ class Bot(ircbot.SingleServerIRCBot):
         return messagesFile[lineNum - 1].rstrip('\n')
         
     def sayWebpageTitle(self,url,event):
-        # Find a better way to do this.
-        title = commands.getoutput("curl -s " + "\"" + url + "\"" + " | awk -vRS=\"</title>\" '/<title>/{gsub(/.*<title>|\\n+/,\"\");print;exit}'")
-        if not title == "":
-            self.connection.privmsg(event.target(), "Title: " + title)
-        return
+        try:
+            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
+            #retrieves page titles and parses special characters
+            if not title == "":
+                self.connection.privmsg(event.target(), "Title: " + title)
+        except Exception:
+            title = BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string
+            #if page contains a Unicode character, it doesn't parse it, since
+            #python-irclib cannot send such characters
+            if not title == "":
+                self.connection.privmsg(event.target(), "Title: " + title)
     
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
