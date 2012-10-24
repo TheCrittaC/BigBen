@@ -10,7 +10,6 @@ import commands
 import urllib
 import BeautifulSoup
 import HTMLParser
-from lxml import html
 from urllib2 import urlopen
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
