@@ -10,6 +10,7 @@ import commands
 import urllib
 import BeautifulSoup
 import HTMLParser
+from lxml import html
 from urllib2 import urlopen
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
@@ -44,7 +45,6 @@ class Bot(ircbot.SingleServerIRCBot):
         theTime = time.gmtime()#does things for GMT
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
-        shortHour += 1 #>Daylight savings time
         return shortHour
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
@@ -110,11 +110,14 @@ class Bot(ircbot.SingleServerIRCBot):
         self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
         
     def formulateMessage(self):
+        hour = self.getHour()
+        if hour == 0:
+            hour = 12
         if self.getMin() == 0:
-            return "OI IT'S " + str(self.getHour()) + " BONG"
+            return "OI IT'S " + str(hour) + " BONG"
         elif self.getMin() == 1:
             return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
-        return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(self.getHour()) + " BONG"
+        return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(hour) + " BONG"
 
     def magicConch(self):
         messages = open("RESPONSES", 'r')
