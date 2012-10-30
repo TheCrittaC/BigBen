@@ -134,6 +134,7 @@ class Bot(ircbot.SingleServerIRCBot):
             title = title.strip() #removes leading and trailing whitespace
             title = re.sub('[\n]', '', title) #removes any newlines that are in the title
             #retrieves page titles and parses special characters
+            title = title.encode('utf-8')
             if not title == "":
                 self.connection.privmsg(event.target(), "Title: " + title)
         except Exception:
