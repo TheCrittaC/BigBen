@@ -36,10 +36,10 @@ class Bot(ircbot.SingleServerIRCBot):
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
+        self.commandnicks = []
+        self.responses = []
+        self.ignores = []
         self.message = '' #message for the .time command
-        customResponses = open("CUSTOMRESPONSES", "r")
-        self.responsesFile = customResponses.readlines()
-        customResponses.close()
         self.custom = 0;
 
     def getHour(self):
@@ -47,12 +47,14 @@ class Bot(ircbot.SingleServerIRCBot):
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
         shortHour = longHour % 12
         return shortHour
+
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
             time.sleep(10)#waits 10 seconds
             for channel in self.mychannels:
                 self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
+                
     def getMin(self):
         theTime = time.gmtime()
         return theTime.tm_min
@@ -60,6 +62,21 @@ class Bot(ircbot.SingleServerIRCBot):
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
 
+    def fileUpdate(self):
+        self.customResponsesFile = open("CUSTOMRESPONSES", "r")
+        self.customResponses = self.customResponsesFile.readlines()
+        self.customResponsesFile.close()
+        self.messagesFile = open("RESPONSES", 'r')
+        self.responses = self.messagesFile.readlines()
+        self.messagesFile.close()
+        self.nicksFile = open("NICKS", 'r')
+        self.commandnicks = self.nicksFile.readlines()
+        self.nicksFile.close()
+        self.ignoreFile = open("IGNORE", 'r')
+        self.ignores = self.ignoreFile.readlines()
+        self.ignoreFile.close()
+        
+                
     def setupLog(self):
         outfile = open(logfile, "w")
         outfile.close() #creates logfile
@@ -109,6 +126,7 @@ class Bot(ircbot.SingleServerIRCBot):
         for channel in self.mychannels:
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
+        self.fileUpdate()
         
     def formulateMessage(self):
         hour = self.getHour()
@@ -121,12 +139,9 @@ class Bot(ircbot.SingleServerIRCBot):
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(hour) + " BONG"
 
     def magicConch(self):
-        messages = open("RESPONSES", 'r')
-        messagesFile = messages.readlines()
-        lines = len(messagesFile)
+        lines = len(self.responses)
         lineNum = random.randint(0, lines - 1)
-        messages.close()
-        return messagesFile[lineNum - 1].rstrip('\n')
+        return self.responses[lineNum - 1].rstrip('\n')
         
     def sayWebpageTitle(self,url,event):
         try:
@@ -147,33 +162,37 @@ class Bot(ircbot.SingleServerIRCBot):
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
-        if message == pubTimeCommand:
-            self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
-        elif message == PMTimeCommand:
-            self.connection.notice(event.source().split('!')[0], self.formulateMessage()) #tell the user who says the PMTimeCommand what time it is
-        elif message.startswith(".") and message.endswith("ing"):
-            if " " not in message and ".bing" not in message: # doesn't let the bot bong or respond to commands with a space in them
-                response = message[:-3] #response starts as everything but the 'ing'
-                response = response + "ong"
-                response = response.lstrip('.')
-                self.connection.privmsg(event.target(), response)
-        elif message.startswith(self.nick) and message.endswith("??"):
-            for e in self.responsesFile:
-                if message.lstrip(self.nick).lstrip(",: ").rstrip(" ??") == e.split("::")[0]:
-                    self.connection.privmsg(event.target(), e.split("::")[1])
-                    self.custom = 1 # tells the bot we have a custom reply
-            if self.custom == 0: # if we have not had a custom reply
-                self.connection.privmsg(event.target(), self.magicConch())
-            self.custom = 0 # resets the custom reply
-        if "http://" in message or "https://" in message:
-            if not event.target() in self.silentChannels:
-                messageList = message.split(' ')
-                for element in messageList:
-                    if element.startswith(("http://","https://"), ):
-                        thread.start_new_thread(self.sayWebpageTitle, (element,event))
+        if source + "\n" not in self.ignores:
+            if message == pubTimeCommand:
+                self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
+            elif message == PMTimeCommand:
+                self.connection.notice(event.source().split('!')[0], self.formulateMessage()) #tell the user who says the PMTimeCommand what time it is
+            elif message.startswith(".") and message.endswith("ing"):
+                if " " not in message and ".bing" not in message: # doesn't let the bot bong or respond to commands with a space in them
+                    response = message[:-3] #response starts as everything but the 'ing'
+                    response = response + "ong"
+                    response = response.lstrip('.')
+                    self.connection.privmsg(event.target(), response)
+            elif message.startswith(self.nick) and message.endswith("??"):
+                for e in self.customResponses:
+                    if message.lstrip(self.nick).lstrip(",: ").rstrip(" ??") == e.split("::")[0]:
+                        self.connection.privmsg(event.target(), e.split("::")[1])
+                        self.custom = 1 # tells the bot we have a custom reply
+                if self.custom == 0: # if we have not had a custom reply
+                    self.connection.privmsg(event.target(), self.magicConch())
+                    self.custom = 0 # resets the custom reply
+            elif "http://" in message or "https://" in message:
+                if not event.target() in self.silentChannels:
+                    messageList = message.split(' ')
+                    for element in messageList:
+                        if element.startswith(("http://","https://"), ):
+                            thread.start_new_thread(self.sayWebpageTitle, (element,event))
                         
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
+        source = event.source().split('!')[0]
+        if source + "\n" in self.commandnicks and eventList[0] == ".update":
+            self.fileUpdate()
         if eventList[0] == privTimeCommand:
             self.connection.privmsg(eventList[1], self.formulateMessage()) #Say what time it is
         if eventList[0] == sayCommand:

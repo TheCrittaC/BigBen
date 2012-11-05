@@ -48,6 +48,14 @@ If the message, minus the leading nick and trailing question mark, is in the
 CUSTOMRESPONSES file before the "::" in its line, the message after the "::"
 will be sent to the channel.
 
+Nicks in the IGNORE file will be ignored. This is useful if there are other
+bots in the channel that we don't want BigBen to get links from. This file
+needs to end with a newline character.
+
+Nicks in the NICKS file can privately message the bot ".update" to update the
+responses files, the IGNORE file and the NICKS file. The NICKS file also
+needs to end with a newline character.
+
 There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with
 each join and part, and every fifteen seconds.
