@@ -180,7 +180,7 @@ class Bot(ircbot.SingleServerIRCBot):
                         self.custom = 1 # tells the bot we have a custom reply
                 if self.custom == 0: # if we have not had a custom reply
                     self.connection.privmsg(event.target(), self.magicConch())
-                    self.custom = 0 # resets the custom reply
+                self.custom = 0 # resets the custom reply
             elif "http://" in message or "https://" in message:
                 if not event.target() in self.silentChannels:
                     messageList = message.split(' ')
