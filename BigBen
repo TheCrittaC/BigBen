@@ -58,6 +58,10 @@ class Bot(ircbot.SingleServerIRCBot):
     def getMin(self):
         theTime = time.gmtime()
         return theTime.tm_min
+
+    def getSec(self):
+        theTime = time.gmtime()
+        return theTime.tm_sec
     
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
@@ -90,15 +94,22 @@ class Bot(ircbot.SingleServerIRCBot):
 
     def wait(self): #sounds off the hour
         message = ''
+        waitlength = 1
+        changed = 0
+        bongs = self.getHour()
         while 1:
-            if self.currentHour != self.getHour():
-                self.currentHour = self.getHour() #makes it so the bongs only go off once
-                for i in range (0, self.currentHour):
+            if (self.currentHour != self.getHour()) or (changed == 1):
+                changed = 1
+                bongs = bongs + 1
+                if bongs > 12:
+                    bongs = bongs - 12
+                for i in range (0, bongs):
                     message += 'BONG '
                 for channel in self.channels:
                     self.connection.privmsg(channel, message)
                 message = '' #resets the message
-            time.sleep(1) #only checks once a second to greatly reduce CPU usage
+                waitlength = 3600 - self.getSec()
+            time.sleep(waitlength) #only checks once a second to greatly reduce CPU usage
 
     def logUsers(self, writeMe):
         write = 0
