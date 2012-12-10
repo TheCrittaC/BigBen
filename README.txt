@@ -60,5 +60,8 @@ There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with
 each join and part, and every fifteen seconds.
 
+If you would like to see the bot in action and/or talk with me and the bot, you
+can join #BigBen on irc://irc.rizon.net.
+
 BigBen is licensed under the terms of the GNU General Public license, version
 2 or later, at the user's discretion.
