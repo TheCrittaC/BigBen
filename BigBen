@@ -212,10 +212,10 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.custom = 0 # resets the custom reply
             elif message.startswith(".tweet") and " " in message:
                 try:
-                    self.connection.privmsg(event.target(), self.getTweets(message.split(' ')[1], int(message.split(' ')[2])))
+                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.getTweets(message.split(' ')[1], int(message.split(' ')[2]))))
                     #tries to get the nth tweet
                 except Exception:
-                    self.connection.privmsg(event.target(), self.getTweets(message.split(' ')[1], 1))
+                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.getTweets(message.split(' ')[1], 1)))
                     #if n is not specified, we get the first tweet
                     
             elif "http://" in message or "https://" in message:
