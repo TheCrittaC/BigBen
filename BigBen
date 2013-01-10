@@ -13,6 +13,7 @@ import HTMLParser
 import re
 from lxml import html
 from urllib2 import urlopen
+import logging
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
@@ -21,6 +22,7 @@ log = "no"
 logfile = "users.txt"
 amounts = []
 HTMLParserObject = HTMLParser.HTMLParser()
+
 
 class Bot(ircbot.SingleServerIRCBot):
     def __init__ (self, channels, nick, server, port, password, name, silentChannels):
@@ -48,6 +50,22 @@ class Bot(ircbot.SingleServerIRCBot):
         shortHour = longHour % 12
         return shortHour
 
+    def getTweets(self, username, number):
+        self.url = "https://twitter.com/" + username
+        self.page = urllib.urlopen(self.url)
+        self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
+        self.tweets = self.soup.findAll('p', {"class": "js-tweet-text"})
+        self.goodTweets = []
+        if len(self.tweets) == 0:
+            return "No non-reply tweets found on this page."
+        for tweet in self.tweets:
+            if "@" not in str(tweet):
+                self.goodTweets.append(tweet)
+        if number - 1 > len(self.goodTweets):
+            return "There are only " + str(len(self.goodTweets)) + " non-reply tweets on this page."
+        else:
+            return (HTMLParser.HTMLParser().unescape(self.goodTweets[number - 1].text))
+        #gets the nth tweet from the user's page    
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
@@ -192,6 +210,14 @@ class Bot(ircbot.SingleServerIRCBot):
                 if self.custom == 0: # if we have not had a custom reply
                     self.connection.privmsg(event.target(), self.magicConch())
                 self.custom = 0 # resets the custom reply
+            elif message.startswith(".tweet") and " " in message:
+                try:
+                    self.connection.privmsg(event.target(), self.getTweets(message.split(' ')[1], int(message.split(' ')[2])))
+                    #tries to get the nth tweet
+                except Exception:
+                    self.connection.privmsg(event.target(), self.getTweets(message.split(' ')[1], 1))
+                    #if n is not specified, we get the first tweet
+                    
             elif "http://" in message or "https://" in message:
                 if not event.target() in self.silentChannels:
                     messageList = message.split(' ')

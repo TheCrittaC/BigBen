@@ -38,6 +38,10 @@ echo the text back to the channel specified.
 If ".ping" (or any other message starting with '.' and ending with 'ing') is said in any
 channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
 
+If the phrase ".tweet USERNAME" is said in the channel, the bot will fetch the
+most recent (non-reply) tweet from that user. If a number is specified after the
+tweet, the nth non-reply tweet will be fetched.
+
 If kicked, the bot will reconnect after 10 seconds have passed.
 
 If a message in any channel starts with the bot's nick and ends with '??' (for example,
