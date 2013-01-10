@@ -51,21 +51,16 @@ class Bot(ircbot.SingleServerIRCBot):
         return shortHour
 
     def getTweets(self, username, number):
-        self.url = "https://twitter.com/" + username
+        self.url = "https://api.twitter.com/1/statuses/user_timeline.xml?screen_name=" + username + "&count=" + str(number)
         self.page = urllib.urlopen(self.url)
         self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
-        self.tweets = self.soup.findAll('p', {"class": "js-tweet-text"})
-        self.goodTweets = []
+        self.tweets = self.soup.findAll('text')
         if len(self.tweets) == 0:
-            return "No non-reply tweets found on this page."
-        for tweet in self.tweets:
-            if "@" not in str(tweet):
-                self.goodTweets.append(tweet)
-        if number - 1 > len(self.goodTweets):
-            return "There are only " + str(len(self.goodTweets)) + " non-reply tweets on this page."
+            return "No tweets found on this page."
         else:
-            return (HTMLParser.HTMLParser().unescape(self.goodTweets[number - 1].text))
-        #gets the nth tweet from the user's page    
+            return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text))
+        #gets the nth tweet from the user's page
+        
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
