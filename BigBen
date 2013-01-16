@@ -51,15 +51,20 @@ class Bot(ircbot.SingleServerIRCBot):
         return shortHour
 
     def getTweets(self, username, number):
-        self.url = "https://api.twitter.com/1/statuses/user_timeline.xml?screen_name=" + username + "&count=" + str(number)
-        self.page = urllib.urlopen(self.url)
-        self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
-        self.tweets = self.soup.findAll('text')
-        if len(self.tweets) == 0:
-            return "No tweets found on this page."
-        else:
-            return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text))
-        #gets the nth tweet from the user's page
+        try:
+            self.url = "https://api.twitter.com/1/statuses/user_timeline.xml?screen_name=" + username + "&count=" + str(number)
+            self.page = urllib.urlopen(self.url)
+            self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
+            self.tweets = self.soup.findAll('text')
+            if len(self.tweets) == 0:
+                return "No tweets found on this page."
+            else:
+                return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text))
+                #gets the nth tweet from the user's page
+        except:
+            return "Error retrieving that user's tweets. Perhaps the account is suspended?"
+            # accounts for a 401 error
+            
         
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
