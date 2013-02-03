@@ -59,7 +59,7 @@ class Bot(ircbot.SingleServerIRCBot):
             if len(self.tweets) == 0:
                 return "No tweets found on this page."
             else:
-                return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text))
+                return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text)).encode('utf-8')
                 #gets the nth tweet from the user's page
         except:
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
@@ -174,7 +174,7 @@ class Bot(ircbot.SingleServerIRCBot):
         
     def sayWebpageTitle(self,url,event):
         try:
-            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
+            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string).encode('utf-8')
             title = title.strip() #removes leading and trailing whitespace
             title = re.sub('[\n]', '', title) #removes any newlines that are in the title
             #retrieves page titles and parses special characters
