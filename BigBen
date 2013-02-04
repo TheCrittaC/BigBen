@@ -173,20 +173,13 @@ class Bot(ircbot.SingleServerIRCBot):
         return self.responses[lineNum - 1].rstrip('\n')
         
     def sayWebpageTitle(self,url,event):
-        try:
-            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string).encode('utf-8')
-            title = title.strip() #removes leading and trailing whitespace
-            title = re.sub('[\n]', '', title) #removes any newlines that are in the title
-            #retrieves page titles and parses special characters
-            title = title.encode('utf-8')
-            if not title == "":
-                self.connection.privmsg(event.target(), "Title: " + title)
-        except Exception:
-            title = BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string
-            #if page contains a Unicode character, it doesn't parse it, since
-            #python-irclib cannot send such characters
-            if not title == "":
-                self.connection.privmsg(event.target(), "Title: " + title)
+        title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
+        title = title.strip() #removes leading and trailing whitespace
+        title = re.sub('[\n]', '', title) #removes any newlines that are in the title
+        #retrieves page titles and parses special characters
+        title = title.encode('utf-8')
+        if not title == "":
+            self.connection.privmsg(event.target(), "Title: " + title)
     
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
