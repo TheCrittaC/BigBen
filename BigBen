@@ -175,7 +175,10 @@ class Bot(ircbot.SingleServerIRCBot):
     def sayWebpageTitle(self,url,event):
         headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
         req = urllib2.Request(url, '', headers)
-        title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib2.urlopen(req).read()).title.string)
+        try:
+            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib2.urlopen(req).read()).title.string)
+        except Exception:
+            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
         title = title.strip() #removes leading and trailing whitespace
         title = re.sub('[\n]', '', title) #removes any newlines that are in the title
         #retrieves page titles and parses special characters
