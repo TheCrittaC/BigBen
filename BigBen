@@ -12,7 +12,7 @@ import BeautifulSoup
 import HTMLParser
 import re
 from lxml import html
-from urllib2 import urlopen
+import urllib2
 import logging
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
@@ -173,7 +173,9 @@ class Bot(ircbot.SingleServerIRCBot):
         return self.responses[lineNum - 1].rstrip('\n')
         
     def sayWebpageTitle(self,url,event):
-        title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
+        headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
+        req = urllib2.Request(url, '', headers)
+        title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib2.urlopen(req).read()).title.string)
         title = title.strip() #removes leading and trailing whitespace
         title = re.sub('[\n]', '', title) #removes any newlines that are in the title
         #retrieves page titles and parses special characters
