@@ -64,6 +64,22 @@ class Bot(ircbot.SingleServerIRCBot):
         except:
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
             # accounts for a 401 error
+
+    def urban(self, term, number):
+        try:
+            self.url = "http://www.urbandictionary.com/define.php?term=" + term
+            self.page = urllib.urlopen(self.url)
+            self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
+            self.definitions = self.soup.findAll("div", {"class": "definition"})
+            if len(self.definitions) == 0:
+                return "No definitions found on this page."
+            elif len(self.definitions) < number:
+                return "There are only " + str(len(self.definitions)) + " definitions on this page."
+            else:
+                return (HTMLParser.HTMLParser().unescape(self.definitions[number -1].text)).encode('utf-8')
+        except Exception:
+            return "Error retrieving definition for the term " + term + "."
+                                                    
             
         
     def on_kick(self, c, e):
@@ -220,6 +236,22 @@ class Bot(ircbot.SingleServerIRCBot):
                 except Exception:
                     thread.start_new_thread(self.connection.privmsg, (event.target(), self.getTweets(username, 1)))
                     #if n is not specified, we get the first tweet
+            elif message.startswith(".urban"):
+                if len(message.split(' ')) == 2:
+                    term = message.split(' ')[1]
+                    defnum = 1
+                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
+                    #accounts for the special case of the term being a number
+                try:
+                    try:
+                        defnum = int(message.split(' ')[-1])
+                    except:
+                        defnum = 1
+                    term = message.replace(".urban ", "").replace(" " + str(defnum), "")
+                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
+                except Exception:
+                    thread.start_new_thread(self.connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
+               
                     
             elif "http://" in message or "https://" in message:
                 if not event.target() in self.silentChannels:
