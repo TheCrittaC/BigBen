@@ -242,15 +242,16 @@ class Bot(ircbot.SingleServerIRCBot):
                     defnum = 1
                     thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
                     #accounts for the special case of the term being a number
-                try:
+                else:
                     try:
-                        defnum = int(message.split(' ')[-1])
-                    except:
-                        defnum = 1
-                    term = message.replace(".urban ", "").replace(" " + str(defnum), "")
-                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
-                except Exception:
-                    thread.start_new_thread(self.connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
+                        try:
+                            defnum = int(message.split(' ')[-1])
+                        except:
+                            defnum = 1
+                            term = message.replace(".urban ", "").replace(" " + str(defnum), "")
+                            thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
+                    except Exception:
+                        thread.start_new_thread(self.connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
                
                     
             elif "http://" in message or "https://" in message:
