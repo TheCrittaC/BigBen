@@ -287,44 +287,23 @@ def main():
     global log
     global logfile
     global amounts# need to declare these as global so they can be modified
-    if len(sys.argv) == 2:
-        if sys.argv[1] == "-c":
-            arguments = []
-            file = open (sys.path[0] + "/COMMANDS", "r")
-            for line in file.readlines():
-                arguments.append(line.strip('\n'))#remove the newlines from the list
-            channels = arguments[6].split(' ')
-            nick = arguments[8]
-            network = arguments[2]
-            port = int(arguments[4])
-            password = arguments[10]
-            name = arguments[12]
-            pubTimeCommand = arguments[14]
-            privTimeCommand = arguments[16]
-            sayCommand = arguments[18]
-            PMTimeCommand = arguments[20]
-            log = arguments[22]
-            logfile = arguments[24]
-            silentChannels = arguments[26].split(' ')
-    elif len(sys.argv) != 6:
-        print "Usage: BigBen \"<network[:port]>\" \"<#channel #channel2>\" \"<nickname>\" \"<password>\" \"<ircname>\""
-        print "OR BigBen -c" #prints usage
-        sys.exit(1)
-    else:
-        s = sys.argv[1].split(":", 1)
-        network = s[0]
-        if len(s) == 2:
-            try:
-                port = int(s[1])
-            except ValueError:
-                print "Error: Erroneous port."
-            sys.exit(1) #splits server and port
-        else:
-            port = 6667
-            channels = sys.argv[2].split(' ') #creates the list of channels, the # is required
-            nick = sys.argv[3] #nick
-            password = sys.argv[4] #nickserv password
-            name = sys.argv[5] #ircname
+    arguments = []
+    file = open (sys.path[0] + "/COMMANDS", "r")
+    for line in file.readlines():
+        arguments.append(line.strip('\n'))#remove the newlines from the list
+    channels = arguments[6].split(' ')
+    nick = arguments[8]
+    network = arguments[2]
+    port = int(arguments[4])
+    password = arguments[10]
+    name = arguments[12]
+    pubTimeCommand = arguments[14]
+    privTimeCommand = arguments[16]
+    sayCommand = arguments[18]
+    PMTimeCommand = arguments[20]
+    log = arguments[22]
+    logfile = arguments[24]
+    silentChannels = arguments[26].split(' ')
     bot = Bot(channels, nick, network, port, password, name, silentChannels)
     bot.start()
 

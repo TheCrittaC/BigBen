@@ -1,16 +1,11 @@
-BigBen
+#BigBen IRC Bot
 
-written by Christopher T. Lemay
-requires python-irclib
-===============================
+####written by [Christopher T. Lemay](http://www.thecrittac.us)
+####requires python-irclib and beautifulsoup
 
+###A simple IRC bot that will chime off the number of BONGs at the top of the hour, among other things.
 
-A simple IRC bot that will chime off the number of BONGs at the top of the hour.
-
-USAGE: ./BigBen <network[:port]> <#channel1 #channel2> <nickname> <password> <ircname>
-
-OR
-./BigBen -c
+USAGE: ./BigBen
 
 The first set of commands will cause the bot to connect to the given network, assume the given
 nickname and ircname, identify with nickserv using the given password, and join
@@ -22,9 +17,6 @@ At the top of the hour, the bot will chime off the same number of BONGs that Big
 Ben does. Thus the bot is set to GMT. This happens in all channels that BigBen
 is in.
 
-The bot is set to check for a change in the hour once per second, in order to
-greatly reduce CPU strain.
-
 If the phrase ".time" is said in the channel, the bot will tell what time it is,
 using the phrase "OI IT'S X BONG", where X is the number of BONGs said at the
 top of the hour.
@@ -34,6 +26,8 @@ who said such a thing with the current time.
 
 If the bot receives a private message of ".speak #channel TEXT_HERE", it will
 echo the text back to the channel specified.
+
+Many of these commands can be changed in the COMMANDS file in order to cut down on possible spam.
 
 If ".ping" (or any other message starting with '.' and ending with 'ing') is said in any
 channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
@@ -69,7 +63,7 @@ it will write the number of users in each channel to the given file. This update
 each join and part, and every fifteen seconds.
 
 If you would like to see the bot in action and/or talk with me and the bot, you
-can join #BigBen on irc://irc.rizon.net.
+can join #BigBen on [Rizon](irc://irc.rizon.net).
 
 BigBen is licensed under the terms of the GNU General Public license, version
 2 or later, at the user's discretion.
