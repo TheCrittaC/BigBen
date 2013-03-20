@@ -264,7 +264,8 @@ class Bot(ircbot.SingleServerIRCBot):
                             
             elif message.startswith(".tell"):
                 sourceNick = event.source().split('!')[0]
-                tell[sourceNick] = event.source().split('!')[0] + ":" + message[6 + len(sourceNick):]
+                destNick = message.lstrip(".tell ").split(' ')[0]
+                tell[destNick] = sourceNick + ":" + message[6 + len(destNick):]
 
             elif event.source().split('!')[0] in tell:
                 sourceNick = event.source().split('!')[0]
