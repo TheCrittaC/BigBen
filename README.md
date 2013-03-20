@@ -40,6 +40,10 @@ If the phrase ".urban TERM (optional definition number)" is said in the channel,
 the bot will fetch a definition for that term from Urban Dictionary. If a number
 is not specified, the bot will fetch the first definition for that term.
 
+If the phrase ".tell NICK MESSAGE" is said in the channel, the bot will /query
+the message to the given nick when that nick joins any channel the bot is in or
+sends a message to any channel the bot is in. 
+
 If kicked, the bot will reconnect after 10 seconds have passed.
 
 If a message in any channel starts with the bot's nick and ends with '??' (for example,

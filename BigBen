@@ -22,6 +22,7 @@ log = "no"
 logfile = "users.txt"
 amounts = []
 HTMLParserObject = HTMLParser.HTMLParser()
+tell = dict()
 
 
 class Bot(ircbot.SingleServerIRCBot):
@@ -260,6 +261,15 @@ class Bot(ircbot.SingleServerIRCBot):
                     for element in messageList:
                         if element.startswith(("http://","https://"), ):
                             thread.start_new_thread(self.sayWebpageTitle, (element,event))
+                            
+            elif message.startswith(".tell"):
+                sourceNick = event.source().split('!')[0]
+                tell[sourceNick] = event.source().split('!')[0] + ":" + message[6 + len(sourceNick):]
+
+            elif event.source().split('!')[0] in tell:
+                sourceNick = event.source().split('!')[0]
+                thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
+                del tell[sourceNick] 
                         
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
@@ -277,7 +287,11 @@ class Bot(ircbot.SingleServerIRCBot):
             self.message = ''
             self.array = [] #say what we say to the bot back to the channel
 
-            
+    def on_join(self, connection, event):
+        if event.source().split('!')[0] in tell:
+            sourceNick = event.source().split('!')[0]
+            thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
+            del tell[sourceNick]
             
 def main():
     global pubTimeCommand
