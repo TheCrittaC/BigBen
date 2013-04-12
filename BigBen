@@ -284,9 +284,13 @@ class Bot(ircbot.SingleServerIRCBot):
                 replace = message[2:].split('/')[1]
                 rep_with = message[2:].split('/')[2]
                 for i in range(len(self.pastmessages)-1,-1,-1):
-                    if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
-                        fix_message = self.pastmessages[i]
-                        break
+                    try:
+                        if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
+                            fix_message = self.pastmessages[i]
+                            break
+                    except Except as err: #'unexpected end of pattern'
+                        self.connection.privmsg(event.target(), "No Match Found")
+                        
                 try:
                     fix_message
                 except NameError:
