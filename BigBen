@@ -212,7 +212,9 @@ class Bot(ircbot.SingleServerIRCBot):
         source = event.source().split('!')[0]
         if len(self.pastmessages) > 249:
             self.pastmessages.pop(0)
-        self.pastmessages.append((event.target(), source, message))
+        if source != self.nick and (not (message.startswith(":s/"))):
+            self.pastmessages.append((event.target(), source, message))
+            #we don't add bot's messages or :s/ replies
         if source + "\n" not in self.ignores:
             if message == pubTimeCommand:
                 self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
@@ -290,7 +292,10 @@ class Bot(ircbot.SingleServerIRCBot):
                 except NameError:
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
-                    newText = sub(replace, rep_with, fix_message[2])
+                    if (len(message[2:].split('/')) == 4): #and (message[2:].split['/'][3] == 'g'):
+                        newText = sub(replace, rep_with, fix_message[2])
+                    elif len(message[2:].split('/')) == 3:
+                        newText = sub(replace, rep_with, fix_message[2], 1)
                     self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
