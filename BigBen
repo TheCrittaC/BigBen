@@ -295,7 +295,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 except NameError:
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
-                    if (len(message[2:].split('/')) == 4): #and (message[2:].split['/'][3] == 'g'):
+                    if (len(message[2:].split('/')) == 4) and (message[2:].split['/'][3] == 'g'):
                         newText = sub(replace, rep_with, fix_message[2])
                     elif len(message[2:].split('/')) == 3:
                         newText = sub(replace, rep_with, fix_message[2], 1)
