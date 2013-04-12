@@ -14,6 +14,7 @@ import re
 from lxml import html
 import urllib2
 import logging
+from re import sub, search
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
@@ -21,6 +22,7 @@ PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
 amounts = []
+pastmessages = []
 HTMLParserObject = HTMLParser.HTMLParser()
 tell = dict()
 
@@ -34,6 +36,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         self.amounts = amounts
+        self.pastmessages = pastmessages
         self.silentChannels = silentChannels
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
         if log == "yes":
@@ -80,16 +83,16 @@ class Bot(ircbot.SingleServerIRCBot):
                 return (HTMLParser.HTMLParser().unescape(self.definitions[number -1].text)).encode('utf-8')
         except Exception:
             return "Error retrieving definition for the term " + term + "."
-                                                    
-            
-        
+
+
+
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
         if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
             time.sleep(10)#waits 10 seconds
             for channel in self.mychannels:
                 self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
-                
+
     def getMin(self):
         theTime = time.gmtime()
         return theTime.tm_min
@@ -97,7 +100,7 @@ class Bot(ircbot.SingleServerIRCBot):
     def getSec(self):
         theTime = time.gmtime()
         return theTime.tm_sec
-    
+
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
 
@@ -114,8 +117,8 @@ class Bot(ircbot.SingleServerIRCBot):
         self.ignoreFile = open("IGNORE", 'r')
         self.ignores = self.ignoreFile.readlines()
         self.ignoreFile.close()
-        
-                
+
+
     def setupLog(self):
         outfile = open(logfile, "w")
         outfile.close() #creates logfile
@@ -125,7 +128,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.connection.send_raw("LIST " + channel)
                 time.sleep(10) #waits so we don't overload the server
             self.logUsers(self.amounts)
-            
+
 
     def wait(self): #sounds off the hour
         message = ''
@@ -165,15 +168,15 @@ class Bot(ircbot.SingleServerIRCBot):
     def on_list(self, connection, event):
         data = (str(event.arguments()[0]) + ' ' + str(event.arguments()[1]))
         self.amounts.append (data)
-        
-        
-               
+
+
+
     def on_welcome(self, connection, event):
         for channel in self.mychannels:
             connection.join(channel)
         self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
         self.fileUpdate()
-        
+
     def formulateMessage(self):
         hour = self.getHour()
         if hour == 0:
@@ -188,7 +191,7 @@ class Bot(ircbot.SingleServerIRCBot):
         lines = len(self.responses)
         lineNum = random.randint(0, lines - 1)
         return self.responses[lineNum - 1].rstrip('\n')
-        
+
     def sayWebpageTitle(self,url,event):
         headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
         req = urllib2.Request(url, '', headers)
@@ -202,9 +205,12 @@ class Bot(ircbot.SingleServerIRCBot):
         title = title.encode('utf-8')
         if not title == "":
             self.connection.privmsg(event.target(), "Title: " + title)
-    
+
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
+        if len(self.pastmessages) == 250:
+            self.pastmessages.pop(0)
+        self.pastmessages.append(message)
         source = event.source().split('!')[0]
         if source + "\n" not in self.ignores:
             if message == pubTimeCommand:
@@ -225,7 +231,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 if self.custom == 0: # if we have not had a custom reply
                     self.connection.privmsg(event.target(), self.magicConch())
                 self.custom = 0 # resets the custom reply
-            elif message.startswith(".tweet"): 
+            elif message.startswith(".tweet"):
                 if len(message.split(' ')) == 1:
                     username = event.source().split('!')[0]
                     #uses nick as Twitter username
@@ -253,15 +259,15 @@ class Bot(ircbot.SingleServerIRCBot):
                         thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
                     except Exception:
                         thread.start_new_thread(self.connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
-               
-                    
+
+
             elif "http://" in message or "https://" in message:
                 if not event.target() in self.silentChannels:
                     messageList = message.split(' ')
                     for element in messageList:
                         if element.startswith(("http://","https://"), ):
                             thread.start_new_thread(self.sayWebpageTitle, (element,event))
-                            
+
             elif message.startswith(".tell"):
                 sourceNick = event.source().split('!')[0]
                 destNick = message.lstrip(".tell ").split(' ')[0]
@@ -270,8 +276,21 @@ class Bot(ircbot.SingleServerIRCBot):
             elif event.source().split('!')[0] in tell:
                 sourceNick = event.source().split('!')[0]
                 thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
-                del tell[sourceNick] 
-                        
+                del tell[sourceNick]
+            elif message.startswith(":s/"):
+                replace = message[2:].split('/')[1]
+                rep_with = message[2:].split('/')[2]
+                for i in range(len(self.pastmessages)-2,-1,-1):
+                    if search(replace, self.pastmessages[i]):
+                        fix_message = self.pastmessages[i]
+                        break
+                try:
+                    fix_message
+                except NameError:
+                    self.connection.privmsg(event.target(), "No Match Found")
+                else:
+                    self.connection.privmsg(event.target(), sub(replace, rep_with, fix_message))
+
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
         source = event.source().split('!')[0]
@@ -293,7 +312,7 @@ class Bot(ircbot.SingleServerIRCBot):
             sourceNick = event.source().split('!')[0]
             thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
             del tell[sourceNick]
-            
+
 def main():
     global pubTimeCommand
     global privTimeCommand
@@ -302,6 +321,7 @@ def main():
     global log
     global logfile
     global amounts# need to declare these as global so they can be modified
+    global pastmessages # Used for ':s' substitution
     arguments = []
     file = open (sys.path[0] + "/COMMANDS", "r")
     for line in file.readlines():
