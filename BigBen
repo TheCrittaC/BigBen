@@ -51,6 +51,7 @@ class Bot(ircbot.SingleServerIRCBot):
     def getHour(self):
         theTime = time.gmtime()#does things for GMT
         longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
+        longHour = longHour + 1 #DST
         shortHour = longHour % 12
         return shortHour
 
@@ -208,10 +209,10 @@ class Bot(ircbot.SingleServerIRCBot):
 
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
-        if len(self.pastmessages) == 250:
-            self.pastmessages.pop(0)
-        self.pastmessages.append(message)
         source = event.source().split('!')[0]
+        if len(self.pastmessages) > 249:
+            self.pastmessages.pop(0)
+        self.pastmessages.append((event.target(), source, message))
         if source + "\n" not in self.ignores:
             if message == pubTimeCommand:
                 self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
@@ -281,7 +282,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 replace = message[2:].split('/')[1]
                 rep_with = message[2:].split('/')[2]
                 for i in range(len(self.pastmessages)-2,-1,-1):
-                    if search(replace, self.pastmessages[i]):
+                    if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
                         fix_message = self.pastmessages[i]
                         break
                 try:
@@ -289,7 +290,8 @@ class Bot(ircbot.SingleServerIRCBot):
                 except NameError:
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
-                    self.connection.privmsg(event.target(), sub(replace, rep_with, fix_message))
+                    newText = sub(replace, rep_with, fix_message[2])
+                    self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
