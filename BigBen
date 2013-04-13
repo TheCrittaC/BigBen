@@ -285,7 +285,7 @@ class Bot(ircbot.SingleServerIRCBot):
                 rep_with = message[2:].split('/')[2]
                 for i in range(len(self.pastmessages)-1,-1,-1):
                     try:
-                        if search(replace, self.pastmessages[i][2]):# and search(event.target(),self.pastmessages[i][0]):
+                        if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
                             fix_message = self.pastmessages[i]
                             break
                     except:
@@ -295,11 +295,20 @@ class Bot(ircbot.SingleServerIRCBot):
                 except NameError:
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
-                    if (len(message[2:].split('/')) == 4) and (message[2:].split['/'][3] == 'g'):
-                        newText = sub(replace, rep_with, fix_message[2])
+                    if (len(message[2:].split('/')) == 4) and (message[2:].split('/')[3] == 'g'):
+                        try:
+                            newText = sub(replace, rep_with, fix_message[2])
+                        except:
+                            self.connection.privmsg(event.target(), "Invalid replacement syntax")
                     elif len(message[2:].split('/')) == 3:
-                        newText = sub(replace, rep_with, fix_message[2], 1)
-                    self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
+                        try:
+                            newText = sub(replace, rep_with, fix_message[2], 1)
+                        except:
+                            self.connection.privmsg(event.target(), "Invalid replacement syntax")
+                    try:
+                        self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
+                    except:
+                        pass
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
