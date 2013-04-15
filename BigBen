@@ -281,6 +281,9 @@ class Bot(ircbot.SingleServerIRCBot):
                 thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
                 del tell[sourceNick]
             elif message.startswith(":s/"):
+                if len(message[2:].split('/')) > 2:
+                    replace = message[2:].split('/')[1]
+                    rep_with = message[2:].split('/')[2]
                 for i in range(len(self.pastmessages)-1,-1,-1):
                     try:
                         if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
@@ -294,15 +297,11 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
                     if (len(message[2:].split('/')) == 4) and (message[2:].split('/')[3] == 'g'):
-                        replace = message[2:].split('/')[1]
-                        rep_with = message[2:].split('/')[2]
                         try:
                             newText = sub(replace, rep_with, fix_message[2])
                         except:
                             self.connection.privmsg(event.target(), "Invalid replacement syntax")
                     elif len(message[2:].split('/')) == 3:
-                        replace = message[2:].split('/')[1]
-                        rep_with = message[2:].split('/')[2]
                         try:
                             newText = sub(replace, rep_with, fix_message[2], 1)
                         except:
