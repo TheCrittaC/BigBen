@@ -307,7 +307,7 @@ class Bot(ircbot.SingleServerIRCBot):
                         if search('(?i)%s' % search_term, athread["com"]):
                             found_thread += 1
                             output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
-                self.connection.privmsg(event.target(), "Found %d athreads containing keyword '%s':" % (found_thread, search_term))
+                self.connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
                 output = output[:self.threadAmount] #The amount to show
                 for athread in output:
                     athread = (HTMLParser.HTMLParser().unescape(athread)).encode('utf-8')
