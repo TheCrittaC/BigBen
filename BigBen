@@ -298,20 +298,23 @@ class Bot(ircbot.SingleServerIRCBot):
                     return 0
                 found_thread =0
                 output = []
-                for i in range(len(content)):
-                    for athread in content[i]["threads"]:
-                        try:
-                            athread["com"]
-                        except KeyError:
-                            break
-                        if search('(?i)%s' % search_term, athread["com"]):
-                            found_thread += 1
-                            output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
-                self.connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
-                output = output[:self.threadAmount] #The amount to show
-                for athread in output:
-                    athread = (HTMLParser.HTMLParser().unescape(athread)).encode('utf-8')
-                    self.connection.privmsg(event.target(), athread)
+                try:
+                    for i in range(len(content)):
+                        for athread in content[i]["threads"]:
+                            try:
+                                athread["com"]
+                            except KeyError:
+                                break
+                            if search('(?i)%s' % search_term, athread["com"]):
+                                found_thread += 1
+                                output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
+                    self.connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
+                    output = output[:self.threadAmount] #The amount to show
+                    for athread in output:
+                        athread = (HTMLParser.HTMLParser().unescape(athread)).encode('utf-8')
+                        self.connection.privmsg(event.target(), athread)
+                except:
+                    self.connection.privmsg(event.target(), "Invalid search syntax.")
             elif message.startswith(":s/"):
                 if len(message[2:].split('/')) > 2:
                     replace = message[2:].split('/')[1]
