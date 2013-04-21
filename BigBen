@@ -7,7 +7,7 @@ import thread
 import os
 import random
 import commands
-import urllib
+import urllib, json
 import BeautifulSoup
 import HTMLParser
 import re
@@ -28,7 +28,7 @@ tell = dict()
 
 
 class Bot(ircbot.SingleServerIRCBot):
-    def __init__ (self, channels, nick, server, port, password, name, silentChannels):
+    def __init__ (self, channels, nick, server, port, password, name, silentChannels, threadAmount):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
         self.nick = nick
         self.mychannels = channels
@@ -38,6 +38,7 @@ class Bot(ircbot.SingleServerIRCBot):
         self.amounts = amounts
         self.pastmessages = pastmessages
         self.silentChannels = silentChannels
+        self.threadAmount = threadAmount
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
@@ -280,6 +281,36 @@ class Bot(ircbot.SingleServerIRCBot):
                 sourceNick = event.source().split('!')[0]
                 thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
                 del tell[sourceNick]
+            elif message.startswith(".4chan"):
+                search_term = search('\.4chan\s(\w*)\s(.*)', message)
+                try:
+                    board = search_term.group(1)
+                    search_term = search_term.group(2)
+                except:
+                    self.connection.privmsg(event.target(), "Incorrect syntax: .4chan board search_term")
+                    return 0
+                try:
+                    content = json.load(urllib.urlopen("http://boards.4chan.org/%s/catalog.json" % board))
+                    content
+                except ValueError:
+                    self.connection.privmsg(event.target(), "Error opening catalog")
+                    return 0
+                found_thread =0
+                output = []
+                for i in range(len(content)):
+                    for thread in content[i]["threads"]:
+                        try:
+                            thread["com"]
+                        except KeyError:
+                            break
+                        if search('(?i)%s' % search_term, thread["com"]):
+                            found_thread += 1
+                            output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (thread["replies"], thread["images"], board, thread["no"]) + sub(r"(<([^>]+)>)", " ", thread["com"])[:50] )
+                self.connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
+                output = output[:self.threadAmount] #The amount to show
+                for thread in output:
+                    thread = (HTMLParser.HTMLParser().unescape(thread)).encode('utf-8')
+                    self.connection.privmsg(event.target(), thread)
             elif message.startswith(":s/"):
                 if len(message[2:].split('/')) > 2:
                     replace = message[2:].split('/')[1]
@@ -359,7 +390,8 @@ def main():
     log = arguments[22]
     logfile = arguments[24]
     silentChannels = arguments[26].split(' ')
-    bot = Bot(channels, nick, network, port, password, name, silentChannels)
+    threadAmount = int(arguments[28])
+    bot = Bot(channels, nick, network, port, password, name, silentChannels, threadAmount)
     bot.start()
 
 if __name__ == "__main__":
