@@ -209,12 +209,29 @@ class Bot(ircbot.SingleServerIRCBot):
         if not title == "":
             self.connection.privmsg(event.target(), "Title: " + title)
 
+    def tokenise(self, d, s):
+        l = []
+        pos = s.find(d)
+        while pos >= 0:
+            i = 0
+            while pos-i-1 >= 0 and s[pos-i-1] == '\\':
+                i += 1
+            if i % 2 == 0:
+                l.append(s[:pos])
+                s = s[pos+1:]
+                pos = 0
+            else:
+                s = s[:pos-1] + s[pos:]
+            pos = s.find(d, pos)
+        l.append(s)
+        return l
+
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
         if len(self.pastmessages) > 249:
             self.pastmessages.pop(0)
-        if source != self.nick and not (message.startswith(":s/")):
+        if source != self.nick and not (message.startswith(":s")):
             self.pastmessages.append((event.target(), source, message))
             #we don't add bot's messages or :s/ replies
         if source + "\n" not in self.ignores:
@@ -315,36 +332,51 @@ class Bot(ircbot.SingleServerIRCBot):
                         self.connection.privmsg(event.target(), athread)
                 except:
                     self.connection.privmsg(event.target(), "Invalid search syntax.")
-            elif message.startswith(":s/"):
-                if len(message[2:].split('/')) > 2:
-                    replace = message[2:].split('/')[1]
-                    rep_with = message[2:].split('/')[2]
+            elif message.startswith(":s"):
+                try:
+                    delimiter = message[2]
+                except IndexError:
+                    self.connection.privmsg(event.target(), "Incorrect Syntax")
+                    return 1
+                terms = self.tokenise(delimiter, message[3:])
+                try:
+                    find = terms[0]
+                    replace = terms[1]
+                except:
+                    self.connection.privmsg(event.target(), "Incorrect Syntax")
+                    return 1
+                global_match = 1
+                try:
+                    terms[2]
+                except:
+                    pass
+                else:
+                    for flag in terms[2]:
+                        if flag == 'g' or flag == 'G':
+                            global_match = 0
+                        elif flag == 'i' or flag =='I':
+                            find = '(?i){0}'.format(find)
                 for i in range(len(self.pastmessages)-1,-1,-1):
                     try:
-                        if search(replace, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
+                        if search(find, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
                             fix_message = self.pastmessages[i]
                             break
-                    except:
-                        ""
+                    except Exception, err:
+                        self.connection.privmsg(event.target(), str(err).capitalize())
+                        return 1
                 try:
                     fix_message
                 except NameError:
                     self.connection.privmsg(event.target(), "No Match Found")
                 else:
-                    if (len(message[2:].split('/')) == 4) and (message[2:].split('/')[3] == 'g'):
-                        try:
-                            newText = sub(replace, rep_with, fix_message[2])
-                        except:
-                            self.connection.privmsg(event.target(), "Invalid replacement syntax")
-                    elif len(message[2:].split('/')) == 3:
-                        try:
-                            newText = sub(replace, rep_with, fix_message[2], 1)
-                        except:
-                            self.connection.privmsg(event.target(), "Invalid replacement syntax")
+                    find = r'{0}'.format(find)
                     try:
+                        newText = sub(find, replace, fix_message[2], global_match)
+                    except Exception, err:
+                        self.connection.privmsg(event.target(), str(err).capitalize())
+                        return 1
+                    else:
                         self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
-                    except:
-                        pass
 
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
