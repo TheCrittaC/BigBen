@@ -49,6 +49,11 @@ search the given board on 4chan for threads that have the search term in the
 original post. For example, ".4chan g desktop thread" would search /g/ for
 threads that have "desktop thread" in the original post.
 
+If the phrase ".convert" is said in the channel with an HTML color code in
+hexidecimal as an argument, it will be converted to decimal. Similarly, if
+it is in decimal (e.g. 255-255-255), the bot will convert it to hexidecimal
+and message it to the channel.
+
 If kicked, the bot will reconnect after 10 seconds have passed.
 
 If a message in any channel starts with the bot's nick and ends with '??' (for example,
