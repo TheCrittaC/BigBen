@@ -16,12 +16,14 @@ from lxml import html
 import urllib2
 import logging
 from re import sub, search
+import csv
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
 PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
+speakfile = "speak.txt"
 amounts = []
 pastmessages = []
 HTMLParserObject = HTMLParser.HTMLParser()
@@ -131,7 +133,57 @@ class Bot(ircbot.SingleServerIRCBot):
                 self.connection.send_raw("LIST " + channel)
                 time.sleep(10) #waits so we don't overload the server
             self.logUsers(self.amounts)
+    
+    def lastSpoke(self, channel, user, message):
+        theTime = time.gmtime()#does things for GMT
+        theDate = "{0}-{1}-{2}".format(theTime.tm_year, theTime.tm_mon, theTime.tm_mday)
+        hour = str(theTime.tm_hour+1)
+        minute = str(theTime.tm_min)
+        if len(hour) == 1: hour = "0"+hour
+        if len(minute) == 1: minute = "0"+minute
+        theTime = "{0}:{1}".format(hour, minute)
+        # [0] = time
+        # [1] = channel
+        # [2] = user
+        # [3] = message
+        # [4] = date
+        try:
+            infile = open(speakfile, 'rb')
+        except:
+            open(speakfile, "w").close()
+        finally:
+            infile = open(speakfile, 'rb')
+        reader = csv.reader(infile, delimiter=',')
+        reader = list(reader)
+        infile.close()
+        
+        outfile = open(speakfile, 'wb')
+        writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        
+        for row in reader:
+            if row[2] != user:
+                writer.writerow(row)
+        writer.writerow([theTime,channel,user,message, theDate])
+        outfile.close()
 
+    def getLastSpoke(self, channel, user):
+        theDate = time.gmtime()
+        with open(speakfile, 'rb') as infile:
+            reader = csv.reader(infile, delimiter=',')
+            for row in reader:
+                if row[2].lower() == user.lower():
+                    tDate = row[4].split('-')
+                    sDate = ""
+                    if int(tDate[0]) < theDate.tm_year or int(tDate[1]) < theDate.tm_mon or int(tDate[2]) < theDate.tm_mday:
+                        year = str(tDate[0])
+                        month = str(tDate[1])
+                        day = str(tDate[2])
+                        if len(month) == 1: month = "0"+month
+                        if len(day) == 1: day = "0"+day
+                        sDate = "{0}/{1}/{2}".format(year, month, day)
+                    self.connection.privmsg(channel, u"{0}\u00036[\u000300{1}\u00036]\u00030\u00033 {2} \u00030\u00036<\u000300{3}\u00036>\u000300 {4}".format(sDate, row[0], row[1], row[2], row[3]) )
+                    return 0
+        self.connection.privmsg(channel, "I don't think I've seen {0}".format(user))
 
     def wait(self): #sounds off the hour
         message = ''
@@ -235,6 +287,7 @@ class Bot(ircbot.SingleServerIRCBot):
             self.pastmessages.append((event.target(), source, message))
             #we don't add bot's messages or :s/ replies
         if source + "\n" not in self.ignores:
+            self.lastSpoke(event.target(), source, message)
             if message == pubTimeCommand:
                 self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
             elif message == PMTimeCommand:
@@ -401,9 +454,16 @@ class Bot(ircbot.SingleServerIRCBot):
                         third = hex(int(color[8:11]))[2:]
                         if len(third) == 1:
                             third = "0" + third
-                        self.connection.privmsg(event.target(), "#" + first + second + third)                        
+                        self.connection.privmsg(event.target(), "#" + first + second + third)
                 except:
                     self.connection.privmsg(event.target(), "Invalid syntax.")
+            elif message.startswith("!seen"):
+                try:
+                    user = message.split(' ')[1]
+                    self.getLastSpoke(event.target(), user)
+                except:
+                    self.connection.privmsg(event.target(),"To use the seen command: !seen Username")
+
             
                         
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
@@ -435,6 +495,7 @@ def main():
     global PMTimeCommand
     global log
     global logfile
+    global speakfile
     global amounts# need to declare these as global so they can be modified
     global pastmessages # Used for ':s' substitution
     arguments = []
@@ -455,6 +516,7 @@ def main():
     logfile = arguments[24]
     silentChannels = arguments[26].split(' ')
     threadAmount = int(arguments[28])
+    speakfile = arguments[30]
     bot = Bot(channels, nick, network, port, password, name, silentChannels, threadAmount)
     bot.start()
 
