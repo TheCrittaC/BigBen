@@ -29,65 +29,79 @@ echo the text back to the channel specified.
 
 Many of these commands can be changed in the COMMANDS file in order to cut down on possible spam.
 
-If ".ping" (or any other message starting with '.' and ending with 'ing') is said in any
-channel, the bot will replace 'ing' with 'ong' and respond to that same channel.
-
-If the phrase ".tweet USERNAME" is said in the channel, the bot will fetch the
-most recent tweet from that user. If a number is specified after the tweet, the
-nth tweet will be fetched.
-
-If the phrase ".urban TERM (optional definition number)" is said in the channel,
-the bot will fetch a definition for that term from Urban Dictionary. If a number
-is not specified, the bot will fetch the first definition for that term.
-
-If the phrase ".tell NICK MESSAGE" is said in the channel, the bot will /query
-the message to the given nick when that nick joins any channel the bot is in or
-sends a message to any channel the bot is in.
-
-If the phrase ".4chan BOARD SEARCH_TERM" is said in the channel, the bot will
-search the given board on 4chan for threads that have the search term in the
-original post. For example, ".4chan g desktop thread" would search /g/ for
-threads that have "desktop thread" in the original post.
-
-If the phrase ".convert" is said in the channel with an HTML color code in
-hexidecimal as an argument, it will be converted to decimal. Similarly, if
-it is in decimal (e.g. 255-255-255), the bot will convert it to hexidecimal
-and message it to the channel.
-
-If kicked, the bot will reconnect after 10 seconds have passed.
-
-If a message in any channel starts with the bot's nick and ends with '??' (for example,
-"BigBen, am I ever going to get married??"), the bot will give a random response from the
-RESPONSES file.
-
-If the message, minus the leading nick and trailing question mark, is in the
-CUSTOMRESPONSES file before the "::" in its line, the message after the "::"
-will be sent to the channel.
-
 Nicks in the IGNORE file will be ignored. This is useful if there are other
 bots in the channel that we don't want BigBen to get links from. This file
 needs to end with a newline character.
 
 Nicks in the NICKS file can privately message the bot ".update" to update the
 responses files, the IGNORE file and the NICKS file. The NICKS file also
-needs to end with a newline character.
+needs to end with a newline character. This command also updates the modules,
+checking the `__init__.py` files of each directory for modules to add and
+remove.
 
 There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with
-each join and part, and every fifteen seconds.
+every fifteen seconds.
+
+The next commands listed are provided as modules for the bot. See `modules/pubmsg/test.py`
+for an example module. If you would like to write a module, but are stuck, please join #BigBen
+on irc.rizon.net.
+
+If ".ping" (or any other message starting with '.' and ending with 'ing') is said in any
+channel, the bot will replace 'ing' with 'ong' and respond to that same channel. This is
+provided with the `ping.py` module. 
+
+
+If the phrase ".tweet USERNAME" is said in the channel, the bot will fetch the
+most recent tweet from that user. If a number is specified after the tweet, the
+nth tweet will be fetched. This is provided with the `tweet.py` module.
+
+If the phrase ".urban TERM (optional definition number)" is said in the channel,
+the bot will fetch a definition for that term from Urban Dictionary. If a number
+is not specified, the bot will fetch the first definition for that term. This is
+provided with the `urban.py` module.
+
+If the phrase ".tell NICK MESSAGE" is said in the channel, the bot will /query
+the message to the given nick when that nick joins any channel the bot is in or
+sends a message to any channel the bot is in. This provided with the `tell.py`
+module.
+
+If the phrase ".4chan BOARD SEARCH_TERM" is said in the channel, the bot will
+search the given board on 4chan for threads that have the search term in the
+original post. For example, ".4chan g desktop thread" would search /g/ for
+threads that have "desktop thread" in the original post. This is provided with
+the `fourchan.py` module.
+
+If the phrase ".convert" is said in the channel with an HTML color code in
+hexidecimal as an argument, it will be converted to decimal. Similarly, if
+it is in decimal (e.g. 255-255-255), the bot will convert it to hexidecimal
+and message it to the channel. This is provided with the `htmlconvert.py` module.
+
+If a message in any channel starts with the bot's nick and ends with '??' (for example,
+"BigBen, am I ever going to get married??"), the bot will give a random response from the
+RESPONSES file. This is provided with the `question.py` module.
+
+If the message, minus the leading nick and trailing question mark, is in the
+CUSTOMRESPONSES file before the "::" in its line, the message after the "::"
+will be sent to the channel. This is also provided with the `question.py` module.
+
+The `lastseen.py` module records the last time a user has spoke. Saying
+".seen USERNAME" in the channel will show a user's last message and a timestamp
+of the message.
 
 The bot also supports modifying previous messages with a sed-like syntax. For
 example:
 
-<TheCrittaC> aabb
-<TheCrittaC> :s/a/b
-<BigBen> TheCrittaC: babb
-<TheCrittaC> :s/a/b/g
-<BigBen> TheCrittaC: bbbb
+`<TheCrittaC> aabb`
+`<TheCrittaC> :s/a/b`
+`<BigBen> TheCrittaC: babb`
+`<TheCrittaC> :s/a/b/g`
+`<BigBen> TheCrittaC: bbbb`
+
+This is provided with the `sed.py` module.
 
 If you would like to see the bot in action and/or talk with me and the bot, you
 can join #BigBen on [Rizon](irc://irc.rizon.net).
 
 BigBen is licensed under the terms of the GNU General Public license, version
 2 or later, at the user's discretion.
-

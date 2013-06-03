@@ -6,42 +6,35 @@ import sys
 import thread
 import os
 import random
-import commands
 import urllib
+import commands
 import json
-import BeautifulSoup
-import HTMLParser
 import re
 from lxml import html
-import urllib2
 import logging
+import modules
+from modules.pubmsg import *
+from modules.privmsg import *
+from modules.join import *
 from re import sub, search
-import csv
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
 sayCommand = ".speak"
 PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
-speakfile = "speak.txt"
 amounts = []
-pastmessages = []
-HTMLParserObject = HTMLParser.HTMLParser()
-tell = dict()
-
 
 class Bot(ircbot.SingleServerIRCBot):
-    def __init__ (self, channels, nick, server, port, password, name, silentChannels, threadAmount):
+    def __init__ (self, channels, nick, server, port, password, name):
         ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
         self.nick = nick
         self.mychannels = channels
         self.password = password
+        self.pubmodules = []
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         self.amounts = amounts
-        self.pastmessages = pastmessages
-        self.silentChannels = silentChannels
-        self.threadAmount = threadAmount
         thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
@@ -58,38 +51,6 @@ class Bot(ircbot.SingleServerIRCBot):
         longHour = longHour + 1 #DST
         shortHour = longHour % 12
         return shortHour
-
-    def getTweets(self, username, number):
-        try:
-            self.url = "https://api.twitter.com/1/statuses/user_timeline.xml?screen_name=" + username + "&count=" + str(number)
-            self.page = urllib.urlopen(self.url)
-            self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
-            self.tweets = self.soup.findAll('text')
-            if len(self.tweets) == 0:
-                return "No tweets found on this page."
-            else:
-                return (HTMLParser.HTMLParser().unescape(self.tweets[-1].text)).encode('utf-8')
-                #gets the nth tweet from the user's page
-        except:
-            return "Error retrieving that user's tweets. Perhaps the account is suspended?"
-            # accounts for a 401 error
-
-    def urban(self, term, number):
-        try:
-            self.url = "http://www.urbandictionary.com/define.php?term=" + term
-            self.page = urllib.urlopen(self.url)
-            self.soup = BeautifulSoup.BeautifulSoup(self.page.read())
-            self.definitions = self.soup.findAll("div", {"class": "definition"})
-            if len(self.definitions) == 0:
-                return "No definitions found on this page."
-            elif len(self.definitions) < number:
-                return "There are only " + str(len(self.definitions)) + " definitions on this page."
-            else:
-                return (HTMLParser.HTMLParser().unescape(self.definitions[number -1].text)).encode('utf-8')
-        except Exception:
-            return "Error retrieving definition for the term " + term + "."
-
-
 
     def on_kick(self, c, e):
         kickedNick = e.arguments()[0]
@@ -110,20 +71,29 @@ class Bot(ircbot.SingleServerIRCBot):
         return "BIGBEN BOT" #CTCP VERSION reply
 
     def fileUpdate(self):
-        self.customResponsesFile = open("CUSTOMRESPONSES", "r")
-        self.customResponses = self.customResponsesFile.readlines()
-        self.customResponsesFile.close()
-        self.messagesFile = open("RESPONSES", 'r')
-        self.responses = self.messagesFile.readlines()
-        self.messagesFile.close()
         self.nicksFile = open("NICKS", 'r')
         self.commandnicks = self.nicksFile.readlines()
         self.nicksFile.close()
         self.ignoreFile = open("IGNORE", 'r')
         self.ignores = self.ignoreFile.readlines()
         self.ignoreFile.close()
-
-
+        self.moduleUpdate()
+                
+    def moduleUpdate(self):
+        reload(modules)
+        reload(modules.pubmsg)
+        reload(modules.privmsg)
+        reload(modules.join)
+        self.pubmodules = []
+        for item in modules.pubmsg.__all__:
+            exec("self.pubmodules.append("+item+"."+item+"())")
+        self.privmodules = []
+        for item in modules.privmsg.__all__:
+            exec("self.privmodules.append("+item+"."+item+"())")
+        self.joinmodules = []
+        for item in modules.join.__all__:
+            exec("self.joinmodules.append("+item+"."+item+"())")
+            
     def setupLog(self):
         outfile = open(logfile, "w")
         outfile.close() #creates logfile
@@ -134,57 +104,6 @@ class Bot(ircbot.SingleServerIRCBot):
                 time.sleep(10) #waits so we don't overload the server
             self.logUsers(self.amounts)
     
-    def lastSpoke(self, channel, user, message):
-        theTime = time.gmtime()#does things for GMT
-        theDate = "{0}-{1}-{2}".format(theTime.tm_year, theTime.tm_mon, theTime.tm_mday)
-        hour = str(theTime.tm_hour+1)
-        minute = str(theTime.tm_min)
-        if len(hour) == 1: hour = "0"+hour
-        if len(minute) == 1: minute = "0"+minute
-        theTime = "{0}:{1}".format(hour, minute)
-        # [0] = time
-        # [1] = channel
-        # [2] = user
-        # [3] = message
-        # [4] = date
-        try:
-            infile = open(speakfile, 'rb')
-        except:
-            open(speakfile, "w").close()
-        finally:
-            infile = open(speakfile, 'rb')
-        reader = csv.reader(infile, delimiter=',')
-        reader = list(reader)
-        infile.close()
-        
-        outfile = open(speakfile, 'wb')
-        writer = csv.writer(outfile, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-        
-        for row in reader:
-            if row[2] != user:
-                writer.writerow(row)
-        writer.writerow([theTime,channel,user,message, theDate])
-        outfile.close()
-
-    def getLastSpoke(self, channel, user):
-        theDate = time.gmtime()
-        with open(speakfile, 'rb') as infile:
-            reader = csv.reader(infile, delimiter=',')
-            for row in reader:
-                if row[2].lower() == user.lower():
-                    tDate = row[4].split('-')
-                    sDate = ""
-                    if int(tDate[0]) < theDate.tm_year or int(tDate[1]) < theDate.tm_mon or int(tDate[2]) < theDate.tm_mday:
-                        year = str(tDate[0])
-                        month = str(tDate[1])
-                        day = str(tDate[2])
-                        if len(month) == 1: month = "0"+month
-                        if len(day) == 1: day = "0"+day
-                        sDate = "{0}/{1}/{2}".format(year, month, day)
-                    self.connection.privmsg(channel, u"{0}\u00036[\u000300{1}\u00036]\u00030\u00033 {2} \u00030\u00036<\u000300{3}\u00036>\u000300 {4}".format(sDate, row[0], row[1], row[2], row[3]) )
-                    return 0
-        self.connection.privmsg(channel, "I don't think I've seen {0}".format(user))
-
     def wait(self): #sounds off the hour
         message = ''
         waitlength = 1
@@ -241,231 +160,18 @@ class Bot(ircbot.SingleServerIRCBot):
         elif self.getMin() == 1:
             return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
         return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(hour) + " BONG"
-
-    def magicConch(self):
-        lines = len(self.responses)
-        lineNum = random.randint(0, lines - 1)
-        return self.responses[lineNum - 1].rstrip('\n')
-
-    def sayWebpageTitle(self,url,event):
-        headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
-        req = urllib2.Request(url, '', headers)
-        try:
-            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib2.urlopen(req).read()).title.string)
-        except Exception:
-            title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib.urlopen(url)).title.string)
-        title = title.strip() #removes leading and trailing whitespace
-        title = re.sub('[\n]', '', title) #removes any newlines that are in the title
-        #retrieves page titles and parses special characters
-        title = title.encode('utf-8')
-        if not title == "":
-            self.connection.privmsg(event.target(), "Title: " + title)
-
-    def tokenise(self, d, s):
-        l = []
-        pos = s.find(d)
-        while pos >= 0:
-            i = 0
-            while pos-i-1 >= 0 and s[pos-i-1] == '\\':
-                i += 1
-            if i % 2 == 0:
-                l.append(s[:pos])
-                s = s[pos+1:]
-                pos = 0
-            else:
-                s = s[:pos-1] + s[pos:]
-            pos = s.find(d, pos)
-        l.append(s)
-        return l
-
+    
     def on_pubmsg (self, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
-        if len(self.pastmessages) > 249:
-            self.pastmessages.pop(0)
-        if source != self.nick and not (message.startswith(":s")):
-            self.pastmessages.append((event.target(), source, message))
-            #we don't add bot's messages or :s/ replies
         if source + "\n" not in self.ignores:
-            self.lastSpoke(event.target(), source, message)
+            for module in self.pubmodules:
+                module.on_pubmsg(self.nick, connection, event)
             if message == pubTimeCommand:
                 self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
             elif message == PMTimeCommand:
                 self.connection.notice(event.source().split('!')[0], self.formulateMessage()) #tell the user who says the PMTimeCommand what time it is
-            elif message.startswith(".") and message.endswith("ing"):
-                if " " not in message and ".bing" not in message: # doesn't let the bot bong or respond to commands with a space in them
-                    response = message[:-3] #response starts as everything but the 'ing'
-                    response = response + "ong"
-                    response = response.lstrip('.')
-                    self.connection.privmsg(event.target(), response)
-            elif message.startswith(self.nick) and message.endswith("??"):
-                for e in self.customResponses:
-                    if message.lstrip(self.nick).lstrip(",: ").rstrip(" ??") == e.split("::")[0]:
-                        self.connection.privmsg(event.target(), e.split("::")[1])
-                        self.custom = 1 # tells the bot we have a custom reply
-                if self.custom == 0: # if we have not had a custom reply
-                    self.connection.privmsg(event.target(), self.magicConch())
-                self.custom = 0 # resets the custom reply
-            elif message.startswith(".tweet"):
-                if len(message.split(' ')) == 1:
-                    username = event.source().split('!')[0]
-                    #uses nick as Twitter username
-                else:
-                    username = message.split(' ')[1]
-                try:
-                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.getTweets(username, int(message.split(' ')[2]))))
-                    #tries to get the nth tweet
-                except Exception:
-                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.getTweets(username, 1)))
-                    #if n is not specified, we get the first tweet
-            elif message.startswith(".urban"):
-                if len(message.split(' ')) == 2:
-                    term = message.split(' ')[1]
-                    defnum = 1
-                    thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
-                    #accounts for the special case of the term being a number
-                else:
-                    try:
-                        try:
-                            defnum = int(message.split(' ')[-1])
-                        except:
-                            defnum = 1
-                        term = message.replace(".urban ", "").replace(" " + str(defnum), "")
-                        thread.start_new_thread(self.connection.privmsg, (event.target(), self.urban(term, defnum)))
-                    except Exception:
-                        thread.start_new_thread(self.connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
-
-
-            elif "http://" in message or "https://" in message:
-                if not event.target() in self.silentChannels:
-                    messageList = message.split(' ')
-                    for element in messageList:
-                        if element.startswith(("http://","https://"), ):
-                            thread.start_new_thread(self.sayWebpageTitle, (element,event))
-
-            elif message.startswith(".tell"):
-                sourceNick = event.source().split('!')[0]
-                destNick = message.lstrip(".tell ").split(' ')[0]
-                tell[destNick] = sourceNick + ":" + message[6 + len(destNick):]
-
-            elif event.source().split('!')[0] in tell:
-                sourceNick = event.source().split('!')[0]
-                thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
-                del tell[sourceNick]
-            elif message.startswith(".4chan"):
-                search_term = search('\.4chan\s(\w*)\s(.*)', message)
-                try:
-                    board = search_term.group(1)
-                    search_term = search_term.group(2)
-                except:
-                    self.connection.privmsg(event.target(), "Incorrect syntax: .4chan board search_term")
-                    return 0
-                try:
-                    content = json.load(urllib.urlopen("http://boards.4chan.org/%s/catalog.json" % board))
-                    content
-                except ValueError:
-                    self.connection.privmsg(event.target(), "Error opening catalog")
-                    return 0
-                found_thread =0
-                output = []
-                try:
-                    for i in range(len(content)):
-                        for athread in content[i]["threads"]:
-                            try:
-                                athread["com"]
-                            except KeyError:
-                                break
-                            if search('(?i)%s' % search_term, athread["com"]):
-                                found_thread += 1
-                                output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
-                    self.connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
-                    output = output[:self.threadAmount] #The amount to show
-                    for athread in output:
-                        athread = (HTMLParser.HTMLParser().unescape(athread)).encode('utf-8')
-                        self.connection.privmsg(event.target(), athread)
-                except:
-                    self.connection.privmsg(event.target(), "Invalid search syntax.")
-            elif message.startswith(":s/"):
-                try:
-                    delimiter = message[2]
-                except IndexError:
-                    self.connection.privmsg(event.target(), "Incorrect Syntax")
-                    return 1
-                terms = self.tokenise(delimiter, message[3:])
-                try:
-                    find = terms[0]
-                    replace = terms[1]
-                except:
-                    self.connection.privmsg(event.target(), "Incorrect Syntax")
-                    return 1
-                global_match = 1
-                try:
-                    terms[2]
-                except:
-                    pass
-                else:
-                    for flag in terms[2]:
-                        if flag == 'g' or flag == 'G':
-                            global_match = 0
-                        elif flag == 'i' or flag =='I':
-                            find = '(?i){0}'.format(find)
-                for i in range(len(self.pastmessages)-1,-1,-1):
-                    try:
-                        if search(find, self.pastmessages[i][2]) and search(event.target(),self.pastmessages[i][0]):
-                            fix_message = self.pastmessages[i]
-                            break
-                    except Exception, err:
-                        self.connection.privmsg(event.target(), str(err).capitalize())
-                        return 1
-                try:
-                    fix_message
-                except NameError:
-                    self.connection.privmsg(event.target(), "No Match Found")
-                else:
-                    find = r'{0}'.format(find)
-                    try:
-                        newText = sub(find, replace, fix_message[2], global_match)
-                    except Exception, err:
-                        self.connection.privmsg(event.target(), str(err).capitalize())
-                        return 1
-                    else:
-                        self.connection.privmsg(event.target(), fix_message[1] + ": " + newText)
-            elif message.startswith(".convert"):
-                try:
-                    color = message.split(' ')[1]
-                    if color.startswith("#"):
-                        first = str(int(color[1:3], 16))
-                        for i in range (3 - len(first)):
-                            first = "0" + first
-                        second = str(int(color[3:5], 16))
-                        for i in range (3 - len(second)):
-                            second = "0" + second
-                        third = str(int(color[5:7], 16)) #gets each color
-                        for i in range (3 - len(third)):
-                            third = "0" + third
-                        self.connection.privmsg(event.target(), first + "-" + second + "-" + third)
-                    else:
-                        first = hex(int(color[0:3]))[2:]
-                        if len(first) == 1:
-                            first = "0" + first
-                        second = hex(int(color[4:7]))[2:]
-                        if len(second) == 1:
-                            second = "0" + second
-                        third = hex(int(color[8:11]))[2:]
-                        if len(third) == 1:
-                            third = "0" + third
-                        self.connection.privmsg(event.target(), "#" + first + second + third)
-                except:
-                    self.connection.privmsg(event.target(), "Invalid syntax.")
-            elif message.startswith("!seen"):
-                try:
-                    user = message.split(' ')[1]
-                    self.getLastSpoke(event.target(), user)
-                except:
-                    self.connection.privmsg(event.target(),"To use the seen command: !seen Username")
-
-            
-                        
+                                   
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
         source = event.source().split('!')[0]
@@ -481,12 +187,12 @@ class Bot(ircbot.SingleServerIRCBot):
             self.connection.privmsg(eventList[1], self.message)
             self.message = ''
             self.array = [] #say what we say to the bot back to the channel
+        for module in self.privmodules:
+            module.on_privmsg(self.nick, connection, event)
 
     def on_join(self, connection, event):
-        if event.source().split('!')[0] in tell:
-            sourceNick = event.source().split('!')[0]
-            thread.start_new_thread(self.connection.privmsg, (sourceNick, tell[sourceNick]))
-            del tell[sourceNick]
+        for module in self.joinmodules:
+            module.on_join(self.nick, connection, event)
 
 def main():
     global pubTimeCommand
@@ -514,10 +220,7 @@ def main():
     PMTimeCommand = arguments[20]
     log = arguments[22]
     logfile = arguments[24]
-    silentChannels = arguments[26].split(' ')
-    threadAmount = int(arguments[28])
-    speakfile = arguments[30]
-    bot = Bot(channels, nick, network, port, password, name, silentChannels, threadAmount)
+    bot = Bot(channels, nick, network, port, password, name)
     bot.start()
 
 if __name__ == "__main__":

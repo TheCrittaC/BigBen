@@ -23,9 +23,3 @@ Benny
 no
 #file to write the user data in?
 ~/users.txt
-#Channels not to put page titles in
-#
-#Amount of 4chan threads to show
-3
-#file to write the last seen
-./speak.txt
