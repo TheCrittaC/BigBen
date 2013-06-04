@@ -10,10 +10,14 @@ class tweet:
             page = urllib.urlopen(url)
             soup = BeautifulSoup.BeautifulSoup(page.read())
             tweets = soup.findAll('text')
+            handle = soup.findAll('screen_name')
+            time = soup.findAll('created_at', limit=1)
+            time = soup.created_at.string[:10]
+            name = soup.findAll('name', limit=1)
             if len(tweets) == 0:
                 return "No tweets found on this page."
             else:
-                return (HTMLParser.HTMLParser().unescape(tweets[-1].text)).encode('utf-8')
+                return (HTMLParser.HTMLParser().unescape("{0}\033[34m::\033[0m@{1}\033[34m::\033[0m{2}\033[34m::\033[0m{3}".format(name[-1].text, handle[-1].text, time, tweets[-1].text))).encode('utf-8')
                 #gets the nth tweet from the user's page
         except:
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
