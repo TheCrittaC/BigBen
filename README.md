@@ -89,6 +89,9 @@ The `lastseen.py` module records the last time a user has spoke. Saying
 ".seen USERNAME" in the channel will show a user's last message and a timestamp
 of the message.
 
+The `weather.py` module takes a location as an argument and returns weather for
+that location, using the AccuWeather API. The command is ".weather LOCATION"
+
 The bot also supports modifying previous messages with a sed-like syntax. For
 example:
 
