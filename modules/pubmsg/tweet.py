@@ -33,7 +33,6 @@ class tweet:
             return ("{0}\033[34m::\033[0m@{1}\033[34m::\033[0m{2}\033[34m::\033[0m{3}".format(name, handle, time, tweet)).encode('utf-8')
                 #gets the nth tweet from the user's page
         except:
-            traceback.print_exc()
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
             # accounts for a 401 error
         
