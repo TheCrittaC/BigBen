@@ -166,7 +166,7 @@ class Bot(ircbot.SingleServerIRCBot):
         source = event.source().split('!')[0]
         if source + "\n" not in self.ignores:
             for module in self.pubmodules:
-                module.on_pubmsg(self.nick, connection, event)
+                thread.start_new_thread(module.on_pubmsg, (self.nick, connection, event))
             if message == pubTimeCommand:
                 self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
             elif message == PMTimeCommand:

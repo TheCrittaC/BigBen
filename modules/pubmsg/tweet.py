@@ -1,28 +1,42 @@
 import irclib
 import urllib
-import BeautifulSoup
-import HTMLParser
+import json
 import thread
+import oauth2 as oauth
 class tweet:
+    def __init__(self):
+        keyFile = open("modules/pubmsg/TwitterKeys", 'r')
+        keyList = keyFile.read().splitlines()
+        keyFile.close()
+        for entry in keyList:
+            if entry.startswith('#'):
+                keyList.remove(entry)
+        consumerKey = keyList[0]
+        consumerSecret = keyList[1]
+        accessKey = keyList[2]
+        accessSecret = keyList[3]
+        consumer = oauth.Consumer(key = consumerKey, secret = consumerSecret)
+        accessToken = oauth.Token(key = accessKey, secret = accessSecret)
+        self.client = oauth.Client(consumer, accessToken)
+        
     def getTweets(self, username, number):
         try:
-            url = "https://api.twitter.com/1/statuses/user_timeline.xml?screen_name=" + username + "&count=" + str(number)
-            page = urllib.urlopen(url)
-            soup = BeautifulSoup.BeautifulSoup(page.read())
-            tweets = soup.findAll('text')
-            handle = soup.findAll('screen_name')
-            time = soup.findAll('created_at', limit=1)
-            time = soup.created_at.string[:10]
-            name = soup.findAll('name', limit=1)
-            if len(tweets) == 0:
+            url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=" + str(number)
+            response, data = self.client.request(url)
+            tweetData = json.loads(data)[-1]
+            if not tweetData['text']:
                 return "No tweets found on this page."
-            else:
-                return (HTMLParser.HTMLParser().unescape("{0}\033[34m::\033[0m@{1}\033[34m::\033[0m{2}\033[34m::\033[0m{3}".format(name[-1].text, handle[-1].text, time, tweets[-1].text))).encode('utf-8')
+            tweet = tweetData['text']
+            name = tweetData['user']['name']
+            handle = tweetData['user']['screen_name']
+            time = tweetData['created_at'][:10]
+            return ("{0}\033[34m::\033[0m@{1}\033[34m::\033[0m{2}\033[34m::\033[0m{3}".format(name, handle, time, tweet)).encode('utf-8')
                 #gets the nth tweet from the user's page
         except:
+            traceback.print_exc()
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
             # accounts for a 401 error
-    
+        
     def on_pubmsg(self, nick, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
