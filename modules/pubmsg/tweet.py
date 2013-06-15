@@ -30,7 +30,7 @@ class tweet:
             name = tweetData['user']['name']
             handle = tweetData['user']['screen_name']
             time = tweetData['created_at'][:10]
-            return ("{0}\033[34m::\033[0m@{1}\033[34m::\033[0m{2}\033[34m::\033[0m{3}".format(name, handle, time, tweet)).encode('utf-8')
+            return (u"{0}\u00032::\u000300@{1}\u00032::\u000300{2}\u00032::\u000300{3}".format(name, handle, time, tweet))
                 #gets the nth tweet from the user's page
         except:
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"

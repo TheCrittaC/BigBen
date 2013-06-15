@@ -17,9 +17,12 @@ class youtube:
     def getVideo(self, keyword):
         url = 'https://gdata.youtube.com/feeds/api/videos?q={0}&max-results=1&v=2'.format(keyword)
         xmldoc = minidom.parse(urllib2.urlopen(url))
-        title = xmldoc.getElementsByTagName('title')
-        url = xmldoc.getElementsByTagName('media:player')
-        title = title[1].toxml()
+        try:
+            title = xmldoc.getElementsByTagName('title')
+            url = xmldoc.getElementsByTagName('media:player')
+            title = title[1].toxml()
+        except IndexError:
+            return "Nothing found"
         title = re.sub('<[^>]*>', '', title)
         url = url[0].attributes['url'].value
         url = re.sub('&feature.+', '', url)
