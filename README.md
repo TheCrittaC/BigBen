@@ -103,6 +103,12 @@ example:
 
 This is provided with the `sed.py` module.
 
+The `nowplaying.py` module lets the bot access a user's most recently played
+song on last.fm. If no arguments are specified, the user's nick is used as
+the last.fm username. A user can set their username with the command
+`.np set USERNAME`. A user can see what another user is playing by using the
+command `.np USERNAME`.
+
 If you would like to see the bot in action and/or talk with me and the bot, you
 can join #BigBen on [Rizon](irc://irc.rizon.net).
 
