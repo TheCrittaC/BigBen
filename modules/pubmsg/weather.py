@@ -48,7 +48,6 @@ class weather:
                 "To register your location, say .register_location LOCATION")
             else:
                 location = self.locationsDict[source]
-                print "location = " + location
                 self.getWeather(location, connection, event)
                 
         elif message.startswith(".w "):
