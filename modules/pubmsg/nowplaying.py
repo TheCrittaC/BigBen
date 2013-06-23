@@ -30,9 +30,16 @@ class nowplaying:
                 name = ''.join(node.findAll(text=True))
             for node in soup.findAll('album', limit=1):
                 album = ''.join(node.findAll(text=True))
+            for node in soup.findAll('track', limit=1):
+                attrs = dict(node.attrs)
+                try:
+                    attrs['nowplaying']
+                    prepend = 'Now playing: '
+                except:
+                    prepend = 'Last playing: '
             if len(artist) == 0:
                 return "No tracks found for this user"
-            return (HTMLParser.HTMLParser().unescape("Now Playing: {0} - {1} on {2}".format(artist, name, album))).encode('utf-8')
+            return (HTMLParser.HTMLParser().unescape("{0} {1} - {2} on {3}".format(prepend, artist, name, album))).encode('utf-8')
             #gets the last track from the user's page
         except:
             return "No tracks found or user does not exist"
