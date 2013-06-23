@@ -36,7 +36,7 @@ class nowplaying:
                     attrs['nowplaying']
                     prepend = 'Now playing: '
                 except:
-                    prepend = 'Last playing: '
+                    prepend = 'Last played: '
             if len(artist) == 0:
                 return "No tracks found for this user"
             return (HTMLParser.HTMLParser().unescape("{0} {1} - {2} on {3}".format(prepend, artist, name, album))).encode('utf-8')
