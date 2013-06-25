@@ -27,7 +27,7 @@ class weather:
             weatherJSON = json.load(urlopen
                     ("http://apidev.accuweather.com/currentconditions/v1/" +
                 locationKey + ".json?language=en&apikey=" + self.key))
-            if country == "United States":
+            if country == "United States" or country == "Canada":
                 area = content[0]["AdministrativeArea"]["EnglishName"] + ", "
             else:
                 area = ""
