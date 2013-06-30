@@ -8,10 +8,15 @@ class tell:
         source = event.source().split('!')[0]
         if message.startswith(".tell"):
             sourceNick = event.source().split('!')[0]
-            destNick = message.lstrip(".tell ").split(' ')[0]
-            self.tellDict[destNick] = sourceNick + ":" + message[6 + len(destNick):]
+            destNick = message[6:].split(' ')[0].upper()
+            #we convert everything to uppercase so, for the purpose
+            #of this bot, the nicks are case insensitive 
+            if not destNick in self.tellDict:
+                self.tellDict[destNick] = []
+            self.tellDict[destNick].append(sourceNick + ":" + message[6 + len(destNick):])
 
-        elif event.source().split('!')[0] in self.tellDict:
+        elif event.source().split('!')[0].upper() in self.tellDict:
             sourceNick = event.source().split('!')[0]
-            thread.start_new_thread(connection.privmsg, (sourceNick, self.tellDict[sourceNick]))
-            del self.tellDict[sourceNick]
+            for message in self.tellDict[sourceNick.upper()]:
+                connection.privmsg(sourceNick, message)
+            del self.tellDict[sourceNick.upper()]

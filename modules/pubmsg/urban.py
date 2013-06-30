@@ -1,21 +1,19 @@
 import irclib
-import urllib
-import BeautifulSoup
-import HTMLParser
+from urllib import urlopen
 import thread
+import json
 class urban:
     def urban(self, term, number):
         try:
-            url = "http://www.urbandictionary.com/define.php?term=" + term
-            page = urllib.urlopen(url)
-            soup = BeautifulSoup.BeautifulSoup(page.read())
-            definitions = soup.findAll("div", {"class": "definition"})
-            if len(definitions) == 0:
-                return "No definitions found on this page."
-            elif len(definitions) < number:
-                return "There are only " + str(len(definitions)) + " definitions on this page."
+            url = "http://api.urbandictionary.com/v0/define?term=" + term
+            content = json.load(urlopen(url))
+            print len(content['list'])
+            if len(content['list']) == 0:
+                return "No definitions found for " + term + "."
+            elif len(content['list']) < number:
+                return "There are only " + str(len(content['list'])) + " definitions available."
             else:
-                return (HTMLParser.HTMLParser().unescape(definitions[number -1].text)).encode('utf-8')
+                return content['list'][number]['definition']
         except Exception:
             return "Error retrieving definition for the term " + term + "."
             
@@ -35,6 +33,6 @@ class urban:
                     except:
                         defnum = 1
                     term = message.replace(".urban ", "").replace(" " + str(defnum), "")
-                    thread.start_new_thread(connection.privmsg, (event.target(), self.urban(term, defnum)))
+                    thread.start_new_thread(connection.privmsg, (event.target(), self.urban(term, defnum - 1)))
                 except Exception:
                     thread.start_new_thread(connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
