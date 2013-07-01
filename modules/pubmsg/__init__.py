@@ -1,1 +1,1 @@
-__all__ = ["sed", "question", "lastspoke", "ping", "tweet", "urban", "pagetitle", "tell", "fourchan", "htmlconvert", "youtube", "google", "nowplaying"]
+__all__ = ["decide", "echo", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "roll", "sed", "tell", "tweet", "weather", "urban", "youtube"]
