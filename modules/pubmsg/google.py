@@ -16,12 +16,12 @@ class google:
             title_1 = hits[0]["titleNoFormatting"]
             url_2 = hits[1]['url']
             title_2 = hits[1]['titleNoFormatting']
-            connection.privmsg(event.target(), (u"{0} :: {1}").format(title_1, url_1))
-            connection.privmsg(event.target(), (u"{0} :: {1}").format(title_2, url_2))
+            connection.privmsg(event.target(), (u"{0} :: {1}").format(title_1, url_1).encode('utf-8'))
+            connection.privmsg(event.target(), (u"{0} :: {1}").format(title_2, url_2).encode('utf-8'))
     def on_pubmsg(self, nick, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
         query = ""
         if message.startswith(".g"):
             query = message[3:]
-            thread.start_new_thread(self.Gsearch(query, connection, event))
+            self.Gsearch(query, connection, event)
