@@ -2,9 +2,9 @@ import irclib
 from urllib import urlopen
 import json
 import os
+import traceback
 class weather:
     def __init__(self):
-        self.key = "cloudBurst"
         if not os.path.exists("modules/pubmsg/userlocations"):
             open("modules/pubmsg/userlocations", 'w').close()
         self.locationsDict = dict()
@@ -17,24 +17,23 @@ class weather:
             self.locationsDict[line.split(" = ")[0]] = line.split(" = ")[1]
         locationsfile.close()
 
+    def kelvinToFahrenheit(self, kelvin):
+        return str((kelvin - 273.15) * 1.8 + 32)
+
+    def kelvinToCelsius(self, kelvin):
+        return str(kelvin - 273.15)
+
     def getWeather(self, location, connection, event):
         try:
-            content = json.load(urlopen("http://apidev.accuweather.com/locations/v1/search?q="
-                                + location + "&apikey=" + self.key))
-            locationKey = content[0]["Key"]
-            name = content[0]["LocalizedName"]
-            country = content[0]["Country"]["LocalizedName"]
-            weatherJSON = json.load(urlopen
-                    ("http://apidev.accuweather.com/currentconditions/v1/" +
-                locationKey + ".json?language=en&apikey=" + self.key))
-            if country == "United States" or country == "Canada":
-                area = content[0]["AdministrativeArea"]["EnglishName"] + ", "
-            else:
-                area = ""
-            location = name + ", " + area + country
-            weather = "Conditions: " + weatherJSON[0]["WeatherText"]
-            temp = ("Temperature: " + str(weatherJSON[0]["Temperature"]["Metric"]["Value"]) + " C / " +
-            str(weatherJSON[0]["Temperature"]["Imperial"]["Value"]) + " F")
+            content = json.load(urlopen(
+                "http://api.openweathermap.org/data/2.1/find/name?q=" + location))
+            city = content['list'][0]['name']
+            country = content['list'][0]['sys']['country']
+            weather = content['list'][0]['weather'][0]['main']
+            location = city + ", " +  country
+            kelvinTemp = int(content['list'][0]['main']['temp'])
+            temp = ("Temperature: " + self.kelvinToCelsius(kelvinTemp)  + " C / " +
+                    self.kelvinToFahrenheit(kelvinTemp) + " F")
             connection.privmsg(event.target(), location + " :: " + weather + " :: " + temp)
         except:
             connection.privmsg(event.target(), "Invalid location.")
