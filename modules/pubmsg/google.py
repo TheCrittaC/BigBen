@@ -4,7 +4,6 @@ import json
 import HTMLParser
 import thread
 import os
-import ast
 class google:
     def Gsearch(self, query, connection, event):
             parser = HTMLParser.HTMLParser()
