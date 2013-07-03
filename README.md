@@ -90,7 +90,9 @@ The `lastseen.py` module records the last time a user has spoke. Saying
 of the message.
 
 The `weather.py` module takes a location as an argument and returns weather for
-that location, using the OpenWeatherMap API. The command is ".weather LOCATION"
+that location, using the Weather Underground API. If the weather is not
+available from there, it uses the OpenWeatherMap API. The command is
+".weather LOCATION"
 
 The bot also supports modifying previous messages with a sed-like syntax. For
 example:
