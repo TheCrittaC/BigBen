@@ -11,10 +11,7 @@ class rt:
 	if message.startswith(".rt"):
 		try:
 			message = message[4:]
-			#url = url + "http://www.omdbapi.com/?t=" + message 
 			url = "http://www.omdbapi.com/?t=" + message + "&tomatoes=true"
-			#print url
-			#url = url + "&tomatoes=true"
 			page = urllib.urlopen(url)
 			soup = str(BeautifulSoup.BeautifulSoup(page.read()))
 			parser = HTMLParser.HTMLParser()
