@@ -21,8 +21,17 @@ class imdb:
 			e = ast.literal_eval(soup)["Plot"]
 			f = ast.literal_eval(soup)["imdbID"]
 			return_url = "www.imdb.com/title/" + f
-			response = "[Title: " + a + "] [Year: " + b + "] [Rating: " + c + "] [Genre: " + d + "] " + "[Description: " + e + "] " + return_url
+			g = ast.literal_eval(soup)["Actors"]
+
+			response = "[Title: " + a + "] "
+			response = response + "[Year: " + b + "] "
+			response = response + "[Rating: " + c + "] "
+			response = response + "[Genre: " + d + "] "
+			response = response + "[Actors: " + g + "] "
+			response = response + "[Plot: " + e + "] "
+
 			connection.privmsg(event.target(), response)
+			connection.privmsg(event.target(), return_url)
 
 		except:
 			connection.privmsg(event.target(), "Found nothing")
