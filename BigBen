@@ -8,9 +8,7 @@ import os
 import random
 import urllib
 import commands
-import json
 import re
-from lxml import html
 import logging
 import modules
 from modules.pubmsg import *
@@ -78,20 +76,132 @@ class Bot(ircbot.SingleServerIRCBot):
         self.ignores = self.ignoreFile.readlines()
         self.ignoreFile.close()
         self.moduleUpdate()
+
+    def enableDisableModule(self, function, moduleType, moduleName, event):
+        self.moduleUpdate()
+        source = event.source().split('!')[0]
+        if moduleType not in ['pubmsg', 'privmsg', 'join']:
+            self.connection.privmsg(source, "Invalid module type.")
+            return
+        elif moduleType == 'pubmsg':
+            if moduleName not in modules.pubmsg.__all__:
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " not found.")
+                return
+            elif moduleName in modules.pubmsg.__enabled__ and function == 'enable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already enabled.")
+            elif moduleName not in modules.pubmsg.__enabled__ and function == 'disable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already disabled.")
+            else:
+                if function == 'enable':
+                    self.pubenabled.append(moduleName)
+                else:
+                    self.pubenabled.remove(moduleName)
+                self.pubenabled.sort(key=str.lower)
+                initfile = open('modules/pubmsg/__init__.py', 'w')
+                initfile.write('__all__ = [')
+                for item in self.puball:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.write('__enabled__ = [')
+                for item in self.pubenabled:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.close()
+                               
+                
+        elif moduleType == 'pubmsg':
+            if moduleName not in modules.privmsg.__all__:
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " not found.")
+                return
+            elif moduleName in modules.privmsg.__enabled__ and function == 'enable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already enabled.")
+            elif moduleName not in modules.privmsg.__enabled__ and function == 'disable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already disabled.")
+            else:
+                if function == 'enable':
+                    self.privenabled.append(moduleName)
+                else:
+                    self.privenabled.remove(moduleName)
+                self.privenabled.sort(key=str.lower)
+                initfile = open('modules/privmsg/__init__.py', 'w')
+                initfile.write('__all__ = [')
+                for item in self.privall:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.write('__enabled__ = [')
+                for item in self.privenabled:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.close()
+
+        elif moduleType == 'join':
+            if moduleName not in modules.join.__all__:
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " not found.")
+                return
+            elif moduleName in modules.join.__enabled__ and function == 'enable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already enabled.")
+            elif moduleName not in modules.join.__enabled__ and function == 'disable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already disabled.")
+            else:
+                if function == 'enable':
+                    self.joinenabled.append(moduleName)
+                else:
+                    self.joinenabled.remove(moduleName)
+                self.joinenabled.sort(key=str.lower)
+                initfile = open('modules/join/__init__.py', 'w')
+                initfile.write('__all__ = [')
+                for item in self.joinall:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.write('__enabled__ = [')
+                for item in self.joinenabled:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.close()
+        self.moduleUpdate()
+        if function == 'enable':
+            self.connection.privmsg(source, "Loaded module " + moduleName + ".")
+        else:
+            self.connection.privmsg(source, "Unloaded module " + moduleName + ".")
+
+    
+        
+        
                 
     def moduleUpdate(self):
+        self.puball = modules.pubmsg.__all__
+        self.pubenabled = modules.pubmsg.__enabled__
+        self.privall = modules.privmsg.__all__
+        self.privenabled = modules.privmsg.__enabled__
+        self.joinall = modules.join.__all__
+        self.joinenabled = modules.join.__enabled__
         reload(modules)
         reload(modules.pubmsg)
         reload(modules.privmsg)
         reload(modules.join)
-        self.pubmodules = []
         for item in modules.pubmsg.__all__:
+            exec("reload(modules.pubmsg." + item + ")")
+        for item in modules.privmsg.__all__:
+            exec("reload(modules.privmsg." + item + ")")
+        for item in modules.join.__all__:
+            exec("reload(modules.join." + item + ")")
+        self.pubmodules = []
+        for item in modules.pubmsg.__enabled__:
             exec("self.pubmodules.append("+item+"."+item+"())")
         self.privmodules = []
-        for item in modules.privmsg.__all__:
+        for item in modules.privmsg.__enabled__:
             exec("self.privmodules.append("+item+"."+item+"())")
         self.joinmodules = []
-        for item in modules.join.__all__:
+        for item in modules.join.__enabled__:
             exec("self.joinmodules.append("+item+"."+item+"())")
             
     def setupLog(self):
@@ -175,8 +285,13 @@ class Bot(ircbot.SingleServerIRCBot):
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
         eventList = event.arguments()[0].split(' ')
         source = event.source().split('!')[0]
-        if source + "\n" in self.commandnicks and eventList[0] == ".update":
-            self.fileUpdate()
+        if source + "\n" in self.commandnicks:
+            if eventList[0] == ".update":
+                self.fileUpdate()
+            elif eventList[0] == '.enable':
+                self.enableDisableModule("enable", eventList[1], eventList[2], event)
+            elif eventList[0] == '.disable':
+                self.enableDisableModule("disable", eventList[1], eventList[2], event)
         if eventList[0] == privTimeCommand:
             self.connection.privmsg(eventList[1], self.formulateMessage()) #Say what time it is
         if eventList[0] == sayCommand:

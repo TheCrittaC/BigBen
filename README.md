@@ -37,7 +37,13 @@ Nicks in the NICKS file can privately message the bot ".update" to update the
 responses files, the IGNORE file and the NICKS file. The NICKS file also
 needs to end with a newline character. This command also updates the modules,
 checking the `__init__.py` files of each directory for modules to add and
-remove.
+remove. All modules need to be listed in the `__all__` list, and enabled
+modules are in the `__enabled__` list.
+
+Modules can be loaded unloaded with the ".enable" and ".disable" commands.
+The syntax of these commands is ".enable module_type module_name". The
+".disable" command works similarly. Valid module types are "pubmsg", "privmsg"
+and "join".
 
 There is a function to log the number of users in each channel. If enabled,
 it will write the number of users in each channel to the given file. This updates with

@@ -1,1 +1,2 @@
-__all__ = ["decide", "eat" "echo", "fortunes", "feet", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question","rt", "roll", "sed", "shorten", "tell", "tweet", "weather", "urban", "youtube"]
+__all__ = ["decide", "eat", "echo", "feet", "fortunes", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "rt", "roll", "sed", "shorten", "tell", "tweet", "weather", "urban", "youtube", ]
+__enabled__ = ["decide", "eat", "echo", "feet", "fortunes", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "roll", "rt", "sed", "shorten", "tell", "tweet", "urban", "weather", "youtube", ]
