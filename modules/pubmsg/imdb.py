@@ -22,10 +22,12 @@ class imdb:
 			f = ast.literal_eval(soup)["imdbID"]
 			return_url = "www.imdb.com/title/" + f
 			g = ast.literal_eval(soup)["Actors"]
+			h = ast.literal_eval(soup)["Runtime"]
 
 			response = "[Title: " + a + "] "
 			response = response + "[Year: " + b + "] "
 			response = response + "[Rating: " + c + "] "
+			response = response + "[Runtime: " + h + "] "
 			response = response + "[Genre: " + d + "] "
 			response = response + "[Actors: " + g + "] "
 			response = response + "[Plot: " + e + "] "
