@@ -33,7 +33,7 @@ class rt:
 			response = response + "[Year: " + b + "] "
 			response = response + "[Runtime: " + i + "] "
 			response = response + "[TomatoMeter: " + c + "] "
-			response = response + "TomatoRating: " + d + "] "
+			response = response + "[TomatoRating: " + d + "] "
 			response = response + "[TomatoFresh: " + e + "] "
 			response = response + "[TomatoRotten " + f + "] "
 			response = response + "[TomatoConsensus: " + g + "] "
