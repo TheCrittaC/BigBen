@@ -4,6 +4,7 @@ import json
 import HTMLParser
 import thread
 import os
+import urllib
 class google:
     def Gsearch(self, query, connection, event):
             parser = HTMLParser.HTMLParser()
@@ -16,13 +17,13 @@ class google:
             try:
                 url_1 = parser.unescape(hits[0]['url'])
                 title_1 = parser.unescape(hits[0]["titleNoFormatting"])
-                connection.privmsg(event.target(), (u"{0} :: {1}").format(title_1, url_1).encode('utf-8'))
+                connection.privmsg(event.target(), (u"{0} :: {1}").format(title_1, urllib.unquote(url_1)).encode('utf-8'))
             except:
                 connection.privmsg(event.target(), ("Error: No results found"))
             try:
                 url_2 = parser.unescape(hits[1]['url'])
                 title_2 = parser.unescape(hits[1]['titleNoFormatting'])
-                connection.privmsg(event.target(), (u"{0} :: {1}").format(title_2, url_2).encode('utf-8'))
+                connection.privmsg(event.target(), (u"{0} :: {1}").format(title_2, urllib.unquote(url_2)).encode('utf-8'))
             except:
                 return
             
