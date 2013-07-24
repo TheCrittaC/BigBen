@@ -35,11 +35,12 @@ class pagetitle:
                 messageList = message.split(' ')
                 for element in messageList:
                     if element.startswith(("http://","https://"), ):
-						if len(element) > 150:
-							url = "http://is.gd/create.php?format=simple&url=" + message[9:]
-							open_Url = urllib.urlopen(url)
-							read_Content = str(BeautifulSoup.BeautifulSoup(open_Url.read()))
-							connection.privmsg(event.target(), "Shortened url: " + read_Content)
-							thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
-						else:
-							thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
+                        if len(element) > 150:
+                            element_url = urllib.quote(element)
+                            url = "http://is.gd/create.php?format=simple&url=" + element_url 
+                            open_Url = urllib.urlopen(url)
+                            read_Content = str(BeautifulSoup.BeautifulSoup(open_Url.read()))
+                            connection.privmsg(event.target(), "Shortened url: " + read_Content)
+                            thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
+                        else:
+                            thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
