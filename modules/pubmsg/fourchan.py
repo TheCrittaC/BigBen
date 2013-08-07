@@ -20,7 +20,10 @@ class fourchan:
                     if element.startswith(("http://boards.4chan.org", "https://boards.4chan.org", "boards.4chan.org"), ):
                         if "#p" in element:
                             thread = element.split("#p")[0]
-                        content = json.load(urlopen("%s.json" % thread))
+                        try:
+                            content = json.load(urlopen("%s.json" % thread))
+                        except:
+                            break
                         postnumber = element.split("#p")[1]
                         content = content["posts"]
                         postnumber = int(postnumber)
