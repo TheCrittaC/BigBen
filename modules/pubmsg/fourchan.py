@@ -6,6 +6,7 @@ import HTMLParser
 import thread
 import traceback
 from re import sub, search
+
 class fourchan:
     def __init__(self):
         threadCountFile = open("./modules/pubmsg/THREADCOUNT", 'r')
@@ -14,6 +15,33 @@ class fourchan:
     def on_pubmsg(self, nick, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
+        if "boards.4chan.org" in message:
+            messageList = message.split(' ')
+            for element in messageList:
+                    if element.startswith(("http://boards.4chan.org", "https://boards.4chan.org", "boards.4chan.org"), ):
+                        if "#p" in element:
+                            thread = element.split("#p")[0]
+                        content = json.load(urlopen("%s.json" % thread))
+                        postnumber = element.split("#p")[1]
+                        content = content["posts"]
+                        postnumber = int(postnumber)
+                        for i in range(len(content)):
+                            target = int(content[i]["no"])
+                            if target == postnumber:
+                                comment = content[i]["com"]
+                                comment = (HTMLParser.HTMLParser().unescape(comment)).encode('utf-8')
+                                comment = sub('<[^<]+?>', ' ', comment)
+                                try:
+                                    name = content[i]["name"]
+                                except:
+                                    name = ""
+                                now = content[i]["now"]
+                                try:
+                                    trip = content[i]["trip"]
+                                except:
+                                    trip = ""
+                                connection.privmsg(event.target(), "{0} {1} :: {2} :: {3} :: {4}".format(name, trip, now, postnumber, comment))
+
         if message.startswith(".4chan"):
             search_term = search('\.4chan\s(\w*)\s(.*)', message)
             try:
