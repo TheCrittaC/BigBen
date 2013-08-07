@@ -6,7 +6,6 @@ import HTMLParser
 import thread
 import traceback
 from re import sub, search
-
 class fourchan:
     def __init__(self):
         threadCountFile = open("./modules/pubmsg/THREADCOUNT", 'r')
