@@ -57,6 +57,9 @@ If ".ping" (or any other message starting with '.' and ending with 'ing') is sai
 channel, the bot will replace 'ing' with 'ong' and respond to that same channel. This is
 provided with the `ping.py` module. 
 
+If a URL is posted in the channel, the bot will fetch its title and send it to the
+channel, unless it contains a regex in the `NoTitle` file. This is provided by the
+`pagetitle.py` file.
 
 If the phrase ".tweet USERNAME" is said in the channel, the bot will fetch the
 most recent tweet from that user. If a number is specified after the tweet, the
@@ -75,8 +78,9 @@ module.
 If the phrase ".4chan BOARD SEARCH_TERM" is said in the channel, the bot will
 search the given board on 4chan for threads that have the search term in the
 original post. For example, ".4chan g desktop thread" would search /g/ for
-threads that have "desktop thread" in the original post. This is provided with
-the `fourchan.py` module.
+threads that have "desktop thread" in the original post. In addition, if a
+link is posted to a 4chan post, the post's content will be put in the channel.
+This is provided with the `fourchan.py` module. 
 
 If the phrase ".convert" is said in the channel with an HTML color code in
 hexidecimal as an argument, it will be converted to decimal. Similarly, if

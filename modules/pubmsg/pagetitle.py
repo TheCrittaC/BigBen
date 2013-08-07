@@ -5,14 +5,20 @@ import BeautifulSoup
 import HTMLParser
 import thread
 from re import sub
+from re import search
 
 class pagetitle:
     def __init__(self):
         silentChannelsFile = open("./modules/pubmsg/SILENTCHANNELS", 'r')
-        self.silentChannels = silentChannelsFile.readlines()
+        self.silentChannels = silentChannelsFile.read().splitlines()
         silentChannelsFile.close()
+        noFetchFile = open("./modules/pubmsg/NoTitle", 'r')
+        self.noFetchRegexes = noFetchFile.read().splitlines()
+        noFetchFile.close()
 
     def sayWebpageTitle(self, url, event, connection):
+        if url == "":
+            return
         HTMLParserObject = HTMLParser.HTMLParser()
         headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
         req = urllib2.Request(url, '', headers)
@@ -35,6 +41,9 @@ class pagetitle:
                 messageList = message.split(' ')
                 for element in messageList:
                     if element.startswith(("http://","https://"), ):
+                        for regex in self.noFetchRegexes:
+                            if search(regex, element):
+                                element = ""
                         if len(element) > 150:
                             element_url = urllib.quote(element)
                             url = "http://is.gd/create.php?format=simple&url=" + element_url 
@@ -44,3 +53,4 @@ class pagetitle:
                             thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
                         else:
                             thread.start_new_thread(self.sayWebpageTitle, (element,event, connection))
+
