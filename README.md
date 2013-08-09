@@ -121,6 +121,13 @@ the last.fm username. A user can set their username with the command
 `.np set USERNAME`. A user can see what another user is playing by using the
 command `.np USERNAME`.
 
+Static modules are always running. They are not event-driven.
+
+The `fourchanmonitor.py` module monitors 4chan for updated threads that match
+a given regular expression. This is configurable via the `ThreadMonitor` file.
+When a new thread is found, it is sent to the given thread along with the first
+fifty characters of the original post.
+
 If you would like to see the bot in action and/or talk with me and the bot, you
 can join #BigBen on [Rizon](irc://irc.rizon.net).
 

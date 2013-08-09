@@ -14,6 +14,7 @@ import modules
 from modules.pubmsg import *
 from modules.privmsg import *
 from modules.join import *
+from modules.static import *
 from re import sub, search
 pubTimeCommand = ".time"
 privTimeCommand = ".time"
@@ -167,33 +168,65 @@ class Bot(ircbot.SingleServerIRCBot):
                     initfile.write('"' + item + '", ')
                 initfile.write(']\n')
                 initfile.close()
+
+        elif moduleType == 'static':
+            if moduleName not in modules.static.__all__:
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " not found.")
+                return
+            elif moduleName in modules.static.__enabled__ and function == 'enable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already enabled.")
+            elif moduleName not in modules.static.__enabled__ and function == 'disable':
+                self.connection.privmsg(source,
+                                        "Module " + moduleName + " already disabled.")
+            else:
+                if function == 'enable':
+                    self.staticenabled.append(moduleName)
+                else:
+                    self.staticenabled.remove(moduleName)
+                self.staticenabled.sort(key=str.lower)
+                initfile = open('modules/static/__init__.py', 'w')
+                initfile.write('__all__ = [')
+                for item in self.staticall:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.write('__enabled__ = [')
+                for item in self.staticenabled:
+                    initfile.write('"' + item + '", ')
+                initfile.write(']\n')
+                initfile.close()
         self.moduleUpdate()
+
         if function == 'enable':
             self.connection.privmsg(source, "Loaded module " + moduleName + ".")
         else:
             self.connection.privmsg(source, "Unloaded module " + moduleName + ".")
 
-    
-        
-        
-                
+
+
     def moduleUpdate(self):
+        reload(modules)
+        reload(modules.pubmsg)
+        reload(modules.privmsg)
+        reload(modules.join)
+        reload(modules.static)
         self.puball = modules.pubmsg.__all__
         self.pubenabled = modules.pubmsg.__enabled__
         self.privall = modules.privmsg.__all__
         self.privenabled = modules.privmsg.__enabled__
         self.joinall = modules.join.__all__
         self.joinenabled = modules.join.__enabled__
-        reload(modules)
-        reload(modules.pubmsg)
-        reload(modules.privmsg)
-        reload(modules.join)
+        self.staticall = modules.join.__all__
+        self.staticenabled = modules.join.__enabled__
         for item in modules.pubmsg.__all__:
             exec("reload(modules.pubmsg." + item + ")")
         for item in modules.privmsg.__all__:
             exec("reload(modules.privmsg." + item + ")")
         for item in modules.join.__all__:
             exec("reload(modules.join." + item + ")")
+        for item in modules.static.__all__:
+            exec("reload(modules.static." + item + ")")
         self.pubmodules = []
         for item in modules.pubmsg.__enabled__:
             exec("self.pubmodules.append("+item+"."+item+"())")
@@ -203,6 +236,10 @@ class Bot(ircbot.SingleServerIRCBot):
         self.joinmodules = []
         for item in modules.join.__enabled__:
             exec("self.joinmodules.append("+item+"."+item+"())")
+        self.staticmodules = []
+        for item in modules.static.__enabled__:
+            exec("self.staticmodules.append("+item+"."+item+"(self.connection))")
+            
             
     def setupLog(self):
         outfile = open(logfile, "w")
