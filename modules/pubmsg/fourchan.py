@@ -43,7 +43,9 @@ class fourchan:
                                 trip = " " + content[i]["trip"]
                             except:
                                 trip = ""
-                            connection.privmsg(event.target(), "{0}{1} :: {2} :: {3} :: {4}".format(name, trip, now, postnumber, comment))
+                            connection.privmsg(event.target(),
+                                               "{0}{1} :: {2} :: {3} :: {4}".format(
+                                                   name, trip, now, postnumber, comment).encode('utf-8'))
 
         if message.startswith(".4chan"):
             search_term = search('\.4chan\s(\w*)\s(.*)', message)
@@ -64,11 +66,18 @@ class fourchan:
             try:
                 for i in range(len(content)):
                     for athread in content[i]["threads"]:
+                        comment = ""
+                        subject = ""
                         try:
-                            athread["com"]
+                            comment = athread["com"]
                         except KeyError:
                             break
-                        if search('(?i)%s' % search_term, athread["com"]):
+                        try:
+                            subject = athread["sub"]
+                        except KeyError:
+                            pass
+                        if (search('(?i)%s' % search_term, comment)
+                            or search('(?i)%s' % search_term, subject)):
                             found_thread += 1
                             output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
                 connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))

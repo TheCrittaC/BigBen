@@ -31,19 +31,21 @@ class fourchanmonitor:
         while 1:
             try:
                 content = json.load(urlopen("http://boards.4chan.org/%s/catalog.json" % board))
-                content
-            except ValueError:
-                return 0
-            try:
                 for i in range(len(content)):
                     for athread in content[i]["threads"]:
+                        comment = ""
+                        subject = ""
                         try:
-                            athread["com"]
+                            comment = athread["com"]
                         except KeyError:
                             break
-                        if (search('(?i)%s' % regex, athread["com"])
+                        try:
+                            subject = athread["sub"]
+                        except KeyError:
+                            pass
+                        if (search('(?i)%s' % regex, comment)
+                            or search('(?i)%s' % regex, subject)
                             and int(athread["no"]) > postNum):
-                            print "found"
                             oldPostNum = postNum
                             postNum = int(athread["no"])
                             output = ("Found new thread matching %s - http://boards.4chan.org/%s/res/%s - %s"
@@ -56,6 +58,5 @@ class fourchanmonitor:
                         break
                     
             except:
-                traceback.print_exc()
-                #print "Error with parsing."
+                print "Error with parsing."
             sleep(updateInterval)

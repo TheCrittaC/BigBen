@@ -1,1 +1,1 @@
-#channel :: regex :: board :: seconds_between_updates
+#channel :: board :: regex :: seconds_between_updates
