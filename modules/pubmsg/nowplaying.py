@@ -4,11 +4,14 @@ import BeautifulSoup
 import HTMLParser
 import thread
 import os
+import sys
 class nowplaying:
     def __init__(self):
         if not os.path.exists("modules/pubmsg/lastfmprofile"):
             open("modules/pubmsg/lastfmprofile", 'w').close()
         self.nickDict = dict()
+        reload(sys)
+        sys.setdefaultencoding('utf-8')
         self.getUsernames()
         
     def getUsernames(self):
@@ -23,7 +26,7 @@ class nowplaying:
         try:
             url = "http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=" + username + "&api_key=e18f4688abaae4639472aaed54fe58bf"
             page = urllib.urlopen(url)
-            soup = BeautifulSoup.BeautifulSoup(page.read())
+            soup = BeautifulSoup.BeautifulSoup(page.read(), fromEncoding = 'utf-8')
             for node in soup.findAll('artist', limit=1):
                 artist = ''.join(node.findAll(text=True))
             for node in soup.findAll('name', limit=1):
@@ -34,12 +37,12 @@ class nowplaying:
                 attrs = dict(node.attrs)
                 try:
                     attrs['nowplaying']
-                    prepend = 'Now playing: '
+                    prepend = 'Now playing:'
                 except:
-                    prepend = 'Last played: '
+                    prepend = 'Last played:'
             if len(artist) == 0:
                 return "No tracks found for this user"
-            return (HTMLParser.HTMLParser().unescape("{0} {1} - {2} on {3}".format(prepend, artist, name, album))).encode('utf-8')
+            return (HTMLParser.HTMLParser().unescape("{0} {1} - {2} on {3}".format(prepend, artist, name, album)))
             #gets the last track from the user's page
         except:
             return "No tracks found or user does not exist"
