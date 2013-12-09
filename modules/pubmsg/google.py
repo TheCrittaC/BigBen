@@ -6,6 +6,13 @@ import thread
 import os
 import urllib
 class google:
+    def __init__(self):
+        if not os.path.exists("modules/pubmsg/bad_googlers"):
+            open("modules/pubmsg/bad_googlers", 'w').close()
+            #creates bad googlers file if it does not exist
+        badGooglersFile = open("modules/pubmsg/bad_googlers", 'r')
+        self.badGooglers = badGooglersFile.read().splitlines()
+        
     def Gsearch(self, query, connection, event):
             parser = HTMLParser.HTMLParser()
             url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=' + query
@@ -31,6 +38,6 @@ class google:
         message = event.arguments()[0]
         source = event.source().split('!')[0]
         query = ""
-        if message.startswith(".g"):
+        if message.startswith(".g") and source not in self.badGooglers:
             query = message[3:]
             self.Gsearch(query, connection, event)
