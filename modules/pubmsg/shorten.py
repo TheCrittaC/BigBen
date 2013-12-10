@@ -1,15 +1,30 @@
 import irclib
 import urllib
 import BeautifulSoup
+import re
+
 class shorten:
+    def __init__(self):
+	self.messageList = []
+	self.lastUrls = []
+
+    def shortenURL(self, url):
+		returnMessage = ""
+		try:
+			open_Url = urllib.urlopen("http://is.gd/create.php?format=simple&url=" + url)
+			read_Content = str(BeautifulSoup.BeautifulSoup(open_Url.read()))
+			returnMessage= "Shortened url: " + read_Content
+		except:
+			returnMessage= "Invalid url"
+		return returnMessage
+
     def on_pubmsg(self, nick, connection, event):
         message = event.arguments()[0]
-        source = event.source().split('!')[0]
 	if message.startswith(".shorten"):
-		try:
-			url = "http://is.gd/create.php?format=simple&url=" + message[9:]
-			open_Url = urllib.urlopen(url)
-			read_Content = str(BeautifulSoup.BeautifulSoup(open_Url.read()))
-			connection.privmsg(event.target(), "Shortened url: " + read_Content)
-		except:
-			connection.privmsg(event.target(), "Invalid url")
+		url = message[9:]
+		connection.privmsg(event.target(), self.shortenURL(url))
+	if ("http://" in message):
+		self.lastUrls = re.findall(r'http[s]?://[^\s<>"]+|www\.[^\s<>"]+',message)
+	if message.startswith(".urlshort"):
+		if(len(self.lastUrls)>0):
+			connection.privmsg(event.target(), self.shortenURL(self.lastUrls[0]))
