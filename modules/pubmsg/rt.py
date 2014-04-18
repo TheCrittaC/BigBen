@@ -35,7 +35,7 @@ class rt:
 			response = response + "[TomatoMeter: " + c + "] "
 			response = response + "[TomatoRating: " + d + "] "
 			response = response + "[TomatoFresh: " + e + "] "
-			response = response + "[TomatoRotten " + f + "] "
+			response = response + "[TomatoRotten: " + f + "] "
 			response = response + "[TomatoConsensus: " + g + "] "
 			connection.privmsg(event.target(), response)
 			#the following statement is to check if the website exists and if it does then print the website name otherwise do nothing
