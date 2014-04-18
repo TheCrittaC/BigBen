@@ -16,11 +16,18 @@ class pagetitle:
         self.noFetchRegexes = noFetchFile.read().splitlines()
         noFetchFile.close()
 
+    def getContentType(self, url):
+        headers = urllib2.urlopen(url)
+        return headers.headers['content-type']
+
     def sayWebpageTitle(self, url, event, connection):
         if url == "":
             return
+        if not self.getContentType(url).startswith("text/html"):
+            return
         HTMLParserObject = HTMLParser.HTMLParser()
-        headers = {'User-Agent' : 'Mozilla/5.0'} #our user agent prevents some 403 errors
+        headers = {'User-Agent' : 'Mozilla/5.0'}
+        #our user agent prevents some 403 errors
         req = urllib2.Request(url, '', headers)
         try:
             title = HTMLParserObject.unescape(BeautifulSoup.BeautifulSoup(urllib2.urlopen(req).read()).title.string)
@@ -36,7 +43,8 @@ class pagetitle:
     def on_pubmsg(self, nick, connection, event):
         message = event.arguments()[0]
         source = event.source().split('!')[0]
-        if "http://" in message or "https://" in message:
+        if ("http://" in message or "https://" in message 
+            and not (message.startswith(".shorten"))):
             if not event.target() in self.silentChannels:
                 messageList = message.split(' ')
                 for element in messageList:

@@ -3,6 +3,7 @@ import urllib
 import json
 import thread
 import oauth2 as oauth
+import HTMLParser
 class tweet:
     def __init__(self):
         keyFile = open("modules/pubmsg/TwitterKeys", 'r')
@@ -30,7 +31,8 @@ class tweet:
             name = tweetData['user']['name']
             handle = tweetData['user']['screen_name']
             time = tweetData['created_at'][:10]
-            return (u"{0} :: @{1} :: {2} :: {3}".format(name, handle, time, tweet))
+            tweet = (u"{0} :: @{1} :: {2} :: {3}".format(name, handle, time, tweet))
+            return HTMLParser.HTMLParser().unescape(tweet).encode('utf-8')
                 #gets the nth tweet from the user's page
         except:
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"

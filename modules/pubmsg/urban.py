@@ -12,7 +12,7 @@ class urban:
             elif len(content['list']) < number:
                 return "There are only " + str(len(content['list'])) + " definitions available."
             else:
-                return content['list'][number]['definition']
+                return content['list'][number]['definition'][:512]
         except Exception:
             return "Error retrieving definition for the term " + term + "."
             
