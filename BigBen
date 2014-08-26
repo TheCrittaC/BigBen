@@ -293,9 +293,11 @@ class Bot(ircbot.SingleServerIRCBot):
 
 
     def on_welcome(self, connection, event):
+        self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
+        time.sleep(4)
+        #gives NickServ time to process authentication before joining channels
         for channel in self.mychannels:
             connection.join(channel)
-        self.connection.privmsg("nickserv", "identify "+self.password) #identify with nickserv
         self.fileUpdate()
 
     def formulateMessage(self):
