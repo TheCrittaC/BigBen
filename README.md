@@ -128,6 +128,14 @@ a given regular expression. This is configurable via the `ThreadMonitor` file.
 When a new thread is found, it is sent to the given thread along with the first
 fifty characters of the original post.
 
+The `stock.py` module retrieves a stock quote for the specified stock symbol.
+This uses the Google Finance API. For example, .stock F would retrieve a stock
+quote for Ford Motor Company, which has the stock symbol F.
+
+Some modules are not documented here, instead of documenting them, there is
+interactive help in the bot. Simply say .help to get a notification from the
+bot of the enabled modules and their usage.
+
 If you would like to see the bot in action and/or talk with me and the bot, you
 can join #BigBen on [Rizon](irc://irc.rizon.net).
 
