@@ -40,6 +40,10 @@ class sed:
             except:
                 connection.privmsg(event.target(), "Incorrect Syntax")
                 return 1
+            if "\\" in replace:
+                connection.privmsg(event.target(), 
+                                   "You don't get to send control characters.")
+                return 1
             global_match = 1
             try:
                 terms[2]
