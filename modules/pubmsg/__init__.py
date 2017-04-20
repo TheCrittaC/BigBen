@@ -1,5 +1,5 @@
-__all__ = ["decide", "echo", "feet", "fortunes", "fourchan",  "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "sed", "shorten", "stock", "tz", "tweet", "weather", "urban", "youtube", "help",]
-__enabled__ = ["echo", "decide", "feet", "fortunes", "fourchan", "htmlconvert", "imdb", "isup", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "shorten", "stock", "weather", "urban", "youtube", "tweet", "tz", "help",]
+__all__ = ["decide", "echo", "fortunes", "fourchan",  "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "sed", "shorten", "stock", "tz", "tweet", "weather", "urban", "youtube", "help",]
+__enabled__ = ["echo", "decide", "fortunes", "fourchan", "htmlconvert", "imdb", "isup", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "shorten", "stock", "weather", "urban", "youtube", "tweet", "tz", "help",]
 __commands__ = {
 	".decide" : "decide",
 	".echo" : "echo",
@@ -27,7 +27,6 @@ __commands__ = {
 __help__ = {
 	"decide" : ".decide this or that or then - Returns one of the choices\n.flip - returns heads or tails, .flip 5 will also return the stats of 5 flips",
 	"echo": ".echo hi - Bot will simply return hi",
-	"feet" : ".feet taylor swift - Return a link to wikifeet",
 	"fortunes" : ".fortune - Return your fortune",
 	"fourchan" : ".4chan BOARD SEARCH_TERM - will search 4chan for threads",
 	"htmlconvert" : ".convert #ff0000 - Will convert into 255-0-0",

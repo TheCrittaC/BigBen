@@ -34,8 +34,6 @@ class Bot(bot.SingleServerIRCBot):
         self.mychannels = channels
         self.password = password
         self.pubmodules = []
-        self.currentHour = self.getHour()
-        self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         self.amounts = amounts
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
