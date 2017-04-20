@@ -1,4 +1,4 @@
-import irclib
+import irc
 import time
 import csv
 speakfile = "speak.txt"

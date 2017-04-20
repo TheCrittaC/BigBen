@@ -1,6 +1,5 @@
 #! /usr/bin/env python
-import irclib
-import ircbot
+import irc
 import time
 import sys
 import thread
@@ -11,22 +10,26 @@ import commands
 import re
 import logging
 import modules
+from irc import bot
 from modules.pubmsg import *
 from modules.privmsg import *
 from modules.join import *
 from modules.static import *
+import traceback
 from re import sub, search
-pubTimeCommand = ".time"
-privTimeCommand = ".time"
-sayCommand = ".speak"
-PMTimeCommand = ".ptime"
 log = "no"
 logfile = "users.txt"
 amounts = []
 
-class Bot(ircbot.SingleServerIRCBot):
+class Bot(bot.SingleServerIRCBot):
+    def getChannels(self):
+        return self.mychannels
+
+    def getIgnores(self):
+        return self.ignores
+
     def __init__ (self, channels, nick, server, port, password, name):
-        ircbot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
+        bot.SingleServerIRCBot.__init__(self, [(server,port)], nick, name, 10)
         self.nick = nick
         self.mychannels = channels
         self.password = password
@@ -34,37 +37,14 @@ class Bot(ircbot.SingleServerIRCBot):
         self.currentHour = self.getHour()
         self.currentMin = self.getMin() #sets current hour and minute, minute doesn't do anything right now
         self.amounts = amounts
-        thread.start_new_thread(self.wait, ()) #listens for the time change in a separate thread so we can listen for input as well
         if log == "yes":
             thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
         self.commandnicks = []
         self.responses = []
         self.ignores = []
-        self.message = '' #message for the .time command
         self.custom = 0
 
-    def getHour(self):
-        theTime = time.gmtime()#does things for GMT
-        longHour = theTime.tm_hour #using this because I am far more comfortable with C than I am with Python
-        longHour = longHour + 1 #DST
-        shortHour = longHour % 12
-        return shortHour
-
-    def on_kick(self, c, e):
-        kickedNick = e.arguments()[0]
-        if kickedNick == self.nick: #only does the following if the bot was the one that is kicked
-            time.sleep(10)#waits 10 seconds
-            for channel in self.mychannels:
-                self.connection.join(channel) #joins all the channels if kicked, joining a channel the bot is already in is okay
-
-    def getMin(self):
-        theTime = time.gmtime()
-        return theTime.tm_min
-
-    def getSec(self):
-        theTime = time.gmtime()
-        return theTime.tm_sec
 
     def get_version(self):
         return "BIGBEN BOT" #CTCP VERSION reply
@@ -79,8 +59,9 @@ class Bot(ircbot.SingleServerIRCBot):
         self.moduleUpdate()
 
     def enableDisableModule(self, function, moduleType, moduleName, event):
+        return
         self.moduleUpdate()
-        source = event.source().split('!')[0]
+        source = event.source.split('!')[0]
         if moduleType not in ['pubmsg', 'privmsg', 'join']:
             self.connection.privmsg(source, "Invalid module type.")
             return
@@ -100,7 +81,7 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.pubenabled.append(moduleName)
                 else:
                     self.pubenabled.remove(moduleName)
-                self.pubenabled.sort(key=str.lower)
+#                self.pubenabled.sort(key=str.lower)
                 initfile = open('modules/pubmsg/__init__.py', 'w')
                 initfile.write('__all__ = [')
                 for item in self.puball:
@@ -129,7 +110,7 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.privenabled.append(moduleName)
                 else:
                     self.privenabled.remove(moduleName)
-                self.privenabled.sort(key=str.lower)
+#                self.privenabled.sort(key=str.lower)
                 initfile = open('modules/privmsg/__init__.py', 'w')
                 initfile.write('__all__ = [')
                 for item in self.privall:
@@ -157,7 +138,7 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.joinenabled.append(moduleName)
                 else:
                     self.joinenabled.remove(moduleName)
-                self.joinenabled.sort(key=str.lower)
+#                self.joinenabled.sort(key=str.lower)
                 initfile = open('modules/join/__init__.py', 'w')
                 initfile.write('__all__ = [')
                 for item in self.joinall:
@@ -185,7 +166,7 @@ class Bot(ircbot.SingleServerIRCBot):
                     self.staticenabled.append(moduleName)
                 else:
                     self.staticenabled.remove(moduleName)
-                self.staticenabled.sort(key=str.lower)
+#                self.staticenabled.sort(key=str.lower)
                 initfile = open('modules/static/__init__.py', 'w')
                 initfile.write('__all__ = [')
                 for item in self.staticall:
@@ -238,57 +219,10 @@ class Bot(ircbot.SingleServerIRCBot):
             exec("self.joinmodules.append("+item+"."+item+"())")
         self.staticmodules = []
         for item in modules.static.__enabled__:
-            exec("self.staticmodules.append("+item+"."+item+"(self.connection))")
+            exec("self.staticmodules.append("+item+"."+item+"(self,self.connection))")
             
             
-    def setupLog(self):
-        outfile = open(logfile, "w")
-        outfile.close() #creates logfile
-        while 1: #run in a loop to keep updating list every 10 seconds
-            time.sleep (1) #waits one second for the bot to join all channels, here for initial run
-            for channel in self.channels:
-                self.connection.send_raw("LIST " + channel)
-                time.sleep(10) #waits so we don't overload the server
-            self.logUsers(self.amounts)
-    
-    def wait(self): #sounds off the hour
-        message = ''
-        waitlength = 1
-        changed = 0
-        bongs = self.getHour()
-        while 1:
-            if (self.currentHour != self.getHour()) or (changed == 1):
-                changed = 1
-                bongs = bongs + 1
-                if bongs > 12:
-                    bongs = bongs - 12
-                for i in range (0, bongs):
-                    message += 'BONG '
-                for channel in self.channels:
-                    self.connection.privmsg(channel, message)
-                message = '' #resets the message
-                waitlength = 3600 - self.getSec()
-            time.sleep(waitlength) #only checks once a second to greatly reduce CPU usage
-
-    def logUsers(self, writeMe):
-        write = 0
-        outfile = open(logfile, 'r')
-        for entry in writeMe:
-            if entry != (outfile.readline().rstrip('\n')):
-                write = 1
-                outfile.close()
-                break # only writes if the file has changed
-        if write == 1:
-            outfile = open(logfile, 'w')
-            for entry in writeMe:
-                outfile.write(entry)
-                outfile.write('\n')
-        outfile.close()
-        self.amounts = []
-
-    def on_list(self, connection, event):
-        data = (str(event.arguments()[0]) + ' ' + str(event.arguments()[1]))
-        self.amounts.append (data)
+   
 
 
 
@@ -300,39 +234,30 @@ class Bot(ircbot.SingleServerIRCBot):
             connection.join(channel)
         self.fileUpdate()
 
-    def formulateMessage(self):
-        hour = self.getHour()
-        if hour == 0:
-            hour = 12
-        if self.getMin() == 0:
-            return "OI IT'S " + str(hour) + " BONG"
-        elif self.getMin() == 1:
-            return "OI IT'S 1 BIT PAST " + str(self.getHour()) + " BONG"
-        return "OI IT'S " + str(self.getMin()) + " BITS PAST " + str(hour) + " BONG"
     
     def on_pubmsg (self, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
+        print event.target
+        print "source is " + source
         if source + "\n" not in self.ignores:
             for module in self.pubmodules:
                 thread.start_new_thread(module.on_pubmsg, (self.nick, connection, event))
-            if message == pubTimeCommand:
-                self.connection.privmsg(event.target(), self.formulateMessage()) #Say what time it is
-            elif message == PMTimeCommand:
-                self.connection.notice(event.source().split('!')[0], self.formulateMessage()) #tell the user who says the PMTimeCommand what time it is
                                    
     def on_privmsg (self, connection, event):  #the user specifies the channel after the command
-        eventList = event.arguments()[0].split(' ')
-        source = event.source().split('!')[0]
+        eventList = event.arguments[0].split(' ')
+        source = event.source.split('!')[0]
         if source + "\n" in self.commandnicks:
-            if eventList[0] == ".update":
-                self.fileUpdate()
-            elif eventList[0] == '.enable':
-                self.enableDisableModule("enable", eventList[1], eventList[2], event)
-            elif eventList[0] == '.disable':
-                self.enableDisableModule("disable", eventList[1], eventList[2], event)
-        if eventList[0] == privTimeCommand:
-            self.connection.privmsg(eventList[1], self.formulateMessage()) #Say what time it is
+            try:
+                if eventList[0] == ".update":
+                    self.fileUpdate()
+                elif eventList[0] == '.enable':
+                    self.enableDisableModule("enable", eventList[1], eventList[2], event)
+                elif eventList[0] == '.disable':
+                    self.enableDisableModule("disable", eventList[1], eventList[2], event)
+            except:
+                traceback.print_exc()
+                return
         if eventList[0] == sayCommand:
             for i in range (2, len(eventList)): #starts at index 2 so we don't say the channel too
                 self.array.append(eventList[i])
@@ -349,10 +274,6 @@ class Bot(ircbot.SingleServerIRCBot):
             module.on_join(self.nick, connection, event)
 
 def main():
-    global pubTimeCommand
-    global privTimeCommand
-    global sayCommand
-    global PMTimeCommand
     global log
     global logfile
     global speakfile
@@ -368,12 +289,6 @@ def main():
     port = int(arguments[4])
     password = arguments[10]
     name = arguments[12]
-    pubTimeCommand = arguments[14]
-    privTimeCommand = arguments[16]
-    sayCommand = arguments[18]
-    PMTimeCommand = arguments[20]
-    log = arguments[22]
-    logfile = arguments[24]
     bot = Bot(channels, nick, network, port, password, name)
     bot.start()
 

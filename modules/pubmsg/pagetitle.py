@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib
 import urllib2
 import BeautifulSoup
@@ -38,14 +38,14 @@ class pagetitle:
         #retrieves page titles and parses special characters
         title = title.encode('utf-8')
         if not title == "":
-            connection.privmsg(event.target(), "Title: " + title)
+            connection.privmsg(event.target, "Title: " + title)
     
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
-        if ("http://" in message or "https://" in message 
-            and not (message.startswith(".shorten"))):
-            if not event.target() in self.silentChannels:
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
+        if (("http://" in message or "https://" in message) and
+            not (message.startswith("."))):
+            if not event.target in self.silentChannels:
                 messageList = message.split(' ')
                 for element in messageList:
                     if element.startswith(("http://","https://"), ):

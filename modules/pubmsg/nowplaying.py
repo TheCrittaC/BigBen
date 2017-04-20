@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib
 import BeautifulSoup
 import HTMLParser
@@ -47,27 +47,27 @@ class nowplaying:
         except:
             return "No tracks found or user does not exist"
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         username = ""
         if message.startswith(".np"):
             messagenew = message[4:]
             if messagenew.startswith("set "):
                 lastfmprofile = messagenew[4:]
-                ircnick = event.source().split('!')[0]
+                ircnick = event.source.split('!')[0]
                 self.nickDict[ircnick] = lastfmprofile
                 nickfile = open("modules/pubmsg/lastfmprofile", 'w')
                 for key in self.nickDict:
                     writenick = '{0} {1}\n'.format(key, self.nickDict[key])
                     nickfile.write(writenick)
-                connection.privmsg(event.target(), "Set last.fm username to " + lastfmprofile)
+                connection.privmsg(event.target, "Set last.fm username to " + lastfmprofile)
             elif len(message.split(' ')) == 1:
                 try:
                     username = self.nickDict[source]
                 except:
                     username = source
-                thread.start_new_thread(connection.privmsg, (event.target(), self.getLastfm(username)))
+                thread.start_new_thread(connection.privmsg, (event.target, self.getLastfm(username)))
             else:
                 username = messagenew
-                thread.start_new_thread(connection.privmsg, (event.target(), self.getLastfm(username)))
+                thread.start_new_thread(connection.privmsg, (event.target, self.getLastfm(username)))
             

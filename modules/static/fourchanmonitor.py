@@ -1,4 +1,4 @@
-import irclib
+import irc
 import json
 from urllib import urlopen
 import BeautifulSoup
@@ -30,7 +30,7 @@ class fourchanmonitor:
         postNum = 0
         while 1:
             try:
-                content = json.load(urlopen("http://boards.4chan.org/%s/catalog.json" % board))
+                content = json.load(urlopen("http://a.4cdn.org/%s/catalog.json" % board))
                 for i in range(len(content)):
                     for athread in content[i]["threads"]:
                         comment = ""
@@ -58,5 +58,5 @@ class fourchanmonitor:
                         break
                     
             except:
-                print "Error with parsing."
+                return
             sleep(updateInterval)

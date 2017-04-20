@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib2
 import json
 import thread
@@ -26,18 +26,18 @@ class stock:
 
         
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         if message.startswith(".stock"):
             if len(message.split(' ')) == 1:
-                symbol = event.source().split('!')[0]
+                symbol = event.source.split('!')[0]
                     #uses nick as Twitter username
             else:
                 symbol = message.split(' ')[1]
             try:
-                thread.start_new_thread(connection.privmsg, (event.target(), self.getQuote(symbol)))
+                thread.start_new_thread(connection.privmsg, (event.target, self.getQuote(symbol)))
                     #tries to get the nth tweet
             except Exception:
                 print (traceback.format_exc())
-                thread.start_new_thread(connection.privmsg, (event.target(), "Error getting quote for " + symbol + "."))
+                thread.start_new_thread(connection.privmsg, (event.target, "Error getting quote for " + symbol + "."))
                     #if n is not specified, we get the first tweet

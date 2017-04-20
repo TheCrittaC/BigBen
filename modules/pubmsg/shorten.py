@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib
 import BeautifulSoup
 import re
@@ -19,12 +19,12 @@ class shorten:
 	return returnMessage
 
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
+        message = event.arguments[0]
 	if message == ".shorten":
 		if(len(self.lastUrls)>0):
-			connection.privmsg(event.target(), self.shortenURL(self.lastUrls[0]))
+			connection.privmsg(event.target, self.shortenURL(self.lastUrls[0]))
 	elif message.startswith(".shorten"):
 		url = message[9:]
-		connection.privmsg(event.target(), self.shortenURL(url))
+		connection.privmsg(event.target, self.shortenURL(url))
 	elif ("http://" in message or "https://" in message):
 		self.lastUrls = re.findall(r'http[s]?://[^\s<>"]+|www\.[^\s<>"]+',message)

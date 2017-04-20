@@ -1,9 +1,9 @@
-import irclib
+import irc
 import random
 class roll:
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         if message.startswith(".roll"):
             splitRoll = message.split(' ')
             try:
@@ -17,7 +17,7 @@ class roll:
                     min = 1
                     max = 6
                 response = random.randint(min, max) #gets the random number init
-                connection.privmsg(event.target(), source + " rolled a " +str(response))
+                connection.privmsg(event.target, source + " rolled a " +str(response))
             except:
-                connection.privmsg(event.target(), "Invalid number format.")
+                connection.privmsg(event.target, "Invalid number format.")
                     #prints the error init

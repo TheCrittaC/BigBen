@@ -1,4 +1,4 @@
-import irclib
+import irc
 from urllib import urlopen
 import json
 import os
@@ -68,7 +68,7 @@ class weather:
                 dayTwo = self.forecast(content, 2)
                 wunderground = "Weather Underground :: http://www.wunderground.com"
                 forecastString = "%s: %s %s %s :: %s" % (area, dayZero, dayOne, dayTwo, wunderground)
-                connection.privmsg(event.target(), forecastString)
+                connection.privmsg(event.target, forecastString)
         except:
             self.openForecast(location, connection, event)
 
@@ -89,7 +89,7 @@ class weather:
                 tempc = str(content['current_observation']['temp_c'])
                 temp = ("Temperature: " + tempc  + " C / " +
                     tempf + " F")
-                connection.privmsg(event.target(), area + " :: " + weather + " :: " + temp +
+                connection.privmsg(event.target, area + " :: " + weather + " :: " + temp +
                                " :: Weather Underground :: http://www.wunderground.com")
         except:
             self.openWeather(location, connection, event)
@@ -120,9 +120,9 @@ class weather:
             for i in range (3):
                 appendMe = "%s: %s %s C / %s F " % (days[i], weather[i], highc[i], highf[i])
                 forecastString = forecastString + appendMe
-            connection.privmsg(event.target(), forecastString)
+            connection.privmsg(event.target, forecastString)
         except:
-            connection.privmsg(event.target(), "Invalid location.")
+            connection.privmsg(event.target, "Invalid location.")
             
                 
             
@@ -137,16 +137,16 @@ class weather:
             kelvinTemp = int(content['list'][0]['main']['temp'])
             temp = ("Temperature: " + self.kelvinToCelsius(kelvinTemp)  + " C / " +
                     self.kelvinToFahrenheit(kelvinTemp) + " F")
-            connection.privmsg(event.target(), location + " :: " + weather + " :: " + temp)
+            connection.privmsg(event.target, location + " :: " + weather + " :: " + temp)
         except:
-            connection.privmsg(event.target(), "Invalid location.")
+            connection.privmsg(event.target, "Invalid location.")
        
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         if message == ".w" or message == ".w ":
             if not source in self.locationsDict:
-                connection.privmsg(event.target(),
+                connection.privmsg(event.target,
                 "To register your location, say .register_location LOCATION")
             else:
                 location = self.locationsDict[source]
@@ -158,7 +158,7 @@ class weather:
 
         if message == ".f" or message == ".f ":
             if not source in self.locationsDict:
-                connection.privmsg(event.target(),
+                connection.privmsg(event.target,
                 "To register your location, say .register_location LOCATION")
             else:
                 location = self.locationsDict[source]
@@ -177,5 +177,5 @@ class weather:
                 writenick = '{0} = {1}\n'.format(key, self.locationsDict[key])
                 locationsfile.write(writenick)
             locationsfile.close()
-            connection.privmsg(event.target(), "Set location to " +
+            connection.privmsg(event.target, "Set location to " +
                                location)

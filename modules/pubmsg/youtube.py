@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib
 import urllib2
 import BeautifulSoup
@@ -8,8 +8,8 @@ from re import sub
 from re import search
 class youtube:
     def on_pubmsg(self, nick, connection, event):   
-        message = event.arguments()[0]
-        username= event.source().split('!')[0]
+        message = event.arguments[0]
+        username= event.source.split('!')[0]
         try:
             arg1 = message.split('.yt ')[1]
         except IndexError:
@@ -18,9 +18,9 @@ class youtube:
             arg1 = arg1.replace(" ", "+")
             message = self.getVideo(arg1)
             try:
-                connection.privmsg(event.target(), message)
+                connection.privmsg(event.target, message)
             except:
-                connection.privmsg(event.target(), "Nothing found")
+                connection.privmsg(event.target, "Nothing found")
     def getContentType(self, url):
         headers = urllib2.urlopen(url)
         return headers.headers['content-type']

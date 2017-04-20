@@ -1,9 +1,9 @@
-import irclib
+import irc
 import random
 class quote:
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
 
 	# Retrieve stored quote
 	if message.startswith(".quote"):
@@ -31,4 +31,4 @@ class quote:
 			response = "Quote has been added forever."
 		else:
 			targetQuotes = "Invalid input."
-		connection.privmsg(event.target(), response)
+		connection.privmsg(event.target, response)

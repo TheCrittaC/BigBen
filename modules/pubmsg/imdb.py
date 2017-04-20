@@ -1,11 +1,11 @@
 import urllib
-import irclib
+import irc
 import BeautifulSoup
 import ast
 class imdb:
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
 
 	if message.startswith(".imdb"):
 		try:
@@ -32,8 +32,8 @@ class imdb:
 			response = response + "[Actors: " + g + "] "
 			response = response + "[Plot: " + e + "] "
 
-			connection.privmsg(event.target(), response)
-			connection.privmsg(event.target(), return_url)
+			connection.privmsg(event.target, response)
+			connection.privmsg(event.target, return_url)
 
 		except:
-			connection.privmsg(event.target(), "Found nothing")
+			connection.privmsg(event.target, "Found nothing")

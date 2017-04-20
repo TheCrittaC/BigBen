@@ -1,2 +1,2 @@
-__all__ = ['fourchanmonitor']
-__enabled__ = ['fourchanmonitor']
+__all__ = ['bong', 'fourchanmonitor']
+__enabled__ = ['bong']

@@ -1,7 +1,7 @@
 #BigBen IRC Bot
 
 ####written by [Christopher T. Lemay](http://www.thecrittac.us)
-####requires python-irclib and beautifulsoup
+####requires python-irc and beautifulsoup
 
 ###A simple IRC bot that will chime off the number of BONGs at the top of the hour, among other things.
 
@@ -15,39 +15,15 @@ The second command will read the options from a file.
 
 At the top of the hour, the bot will chime off the same number of BONGs that Big
 Ben does. Thus the bot is set to GMT. This happens in all channels that BigBen
-is in.
+is in. This is done with the `bong` static module.
 
-If the phrase ".time" is said in the channel, the bot will tell what time it is,
-using the phrase "OI IT'S X BONG", where X is the number of BONGs said at the
-top of the hour.
-The same thing happens if the message ".time #channel" is messaged to the bot privately.
-If the phrase ".ptime" is said in the channel, the bot will /notice the person
-who said such a thing with the current time.
-
-If the bot receives a private message of ".speak #channel TEXT_HERE", it will
-echo the text back to the channel specified.
 
 Many of these commands can be changed in the COMMANDS file in order to cut down on possible spam.
 
 Nicks in the IGNORE file will be ignored. This is useful if there are other
-bots in the channel that we don't want BigBen to get links from. This file
+bots in the channel that we don't want BigBen to get links from or interact with. This file
 needs to end with a newline character.
 
-Nicks in the NICKS file can privately message the bot ".update" to update the
-responses files, the IGNORE file and the NICKS file. The NICKS file also
-needs to end with a newline character. This command also updates the modules,
-checking the `__init__.py` files of each directory for modules to add and
-remove. All modules need to be listed in the `__all__` list, and enabled
-modules are in the `__enabled__` list.
-
-Modules can be loaded unloaded with the ".enable" and ".disable" commands.
-The syntax of these commands is ".enable module_type module_name". The
-".disable" command works similarly. Valid module types are "pubmsg", "privmsg"
-and "join".
-
-There is a function to log the number of users in each channel. If enabled,
-it will write the number of users in each channel to the given file. This updates with
-every fifteen seconds.
 
 The next commands listed are provided as modules for the bot. See `modules/pubmsg/test.py`
 for an example module. If you would like to write a module, but are stuck, please join #BigBen
@@ -95,9 +71,9 @@ If the message, minus the leading nick and trailing question mark, is in the
 CUSTOMRESPONSES file before the "::" in its line, the message after the "::"
 will be sent to the channel. This is also provided with the `question.py` module.
 
-The `lastseen.py` module records the last time a user has spoke. Saying
-".seen USERNAME" in the channel will show a user's last message and a timestamp
-of the message.
+The `stock.py` module retrieves a stock quote for the specified stock symbol.
+This uses the Google Finance API. For example, .stock F would retrieve a stock
+quote for Ford Motor Company, which has the stock symbol F.
 
 The `weather.py` module takes a location as an argument and returns weather for
 that location, using the Weather Underground API. If the weather is not
@@ -126,11 +102,13 @@ Static modules are always running. They are not event-driven.
 The `fourchanmonitor.py` module monitors 4chan for updated threads that match
 a given regular expression. This is configurable via the `ThreadMonitor` file.
 When a new thread is found, it is sent to the given thread along with the first
-fifty characters of the original post.
+fifty characters of the original post. Currently this probably does not work.
 
-The `stock.py` module retrieves a stock quote for the specified stock symbol.
-This uses the Google Finance API. For example, .stock F would retrieve a stock
-quote for Ford Motor Company, which has the stock symbol F.
+The `bong.py` module is the bonging module. It uses NTP to get the time, then 
+sends a message on the hour change. For example, if the hour were to change from
+2 to 3, then the bot would say "BONG BONG BONG" to each channel that it is in. 
+Channels can be excluded by putting them in the `modules/static/NOBONGCHANNELS`
+file, one per line.
 
 Some modules are not documented here, instead of documenting them, there is
 interactive help in the bot. Simply say .help to get a notification from the

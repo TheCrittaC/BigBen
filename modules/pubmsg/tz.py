@@ -1,4 +1,4 @@
-import irclib
+import irc
 import urllib
 import BeautifulSoup
 import HTMLParser
@@ -14,13 +14,13 @@ class tz:
 			localtime = ''.join(node.findAll(text=True))
 			localtime = localtime[-5:]
 		try:
-			connection.privmsg(event.target(), (u"Local time in {0}: {1}".format(query, localtime,))).encode('utf-8')
+			connection.privmsg(event.target, (u"Local time in {0}: {1}".format(query, localtime,))).encode('utf-8')
 		except:
 			return
 		
     def on_pubmsg(self, nick, connection, event):
-		message = event.arguments()[0]
-		source = event.source().split('!')[0]
+		message = event.arguments[0]
+		source = event.source.split('!')[0]
 		location = ""
 		if message.startswith(".tz"):
 			location = message[4:]

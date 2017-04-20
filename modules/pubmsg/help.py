@@ -2,8 +2,8 @@ import __init__
 
 class help:
 	def on_pubmsg(self, nick, connection, event):
-		message = event.arguments()[0]
-		source = event.source().split('!')[0]
+		message = event.arguments[0]
+		source = event.source.split('!')[0]
 		if message.startswith(".help"):
 			try:
 				message.split()[1]
@@ -14,9 +14,9 @@ class help:
 				try:
 					module = __init__.__commands__[message.split()[1]]
 				except KeyError:
-					connection.privmsg(event.target(), "'{0}' doesn't exist".format(message.split()[1]))
+					connection.privmsg(event.target, "'{0}' doesn't exist".format(message.split()[1]))
 				else:
-					connection.privmsg(event.target(), self.findHelp(module))
+					connection.privmsg(event.target, self.findHelp(module))
 
 	def findHelp(self, module):
 		try:
@@ -26,3 +26,4 @@ class help:
 		return man
 
 
+  

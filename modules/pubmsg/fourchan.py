@@ -1,4 +1,4 @@
-import irclib
+import irc
 import json
 from urllib import urlopen
 import BeautifulSoup
@@ -11,8 +11,8 @@ class fourchan:
         self.threadCount = int(threadCountFile.readline())
         threadCountFile.close()
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         if "boards.4chan.org" in message:
             messageList = message.split(' ')
             for element in messageList:
@@ -43,7 +43,7 @@ class fourchan:
                                 trip = " " + content[i]["trip"]
                             except:
                                 trip = ""
-                            connection.privmsg(event.target(),
+                            connection.privmsg(event.target,
                                                "{0}{1} :: {2} :: {3} :: {4}".format(
                                                    name, trip, now, postnumber, comment).encode('utf-8'))
 
@@ -53,14 +53,14 @@ class fourchan:
                 board = search_term.group(1)
                 search_term = search_term.group(2)
             except:
-                connection.privmsg(event.target(), "Incorrect syntax: .4chan board search_term")
+                connection.privmsg(event.target, "Incorrect syntax: .4chan board search_term")
                 return 0
             try:
-                content = json.load(urlopen("http://boards.4chan.org/%s/catalog.json" % board))
+                content = json.load(urlopen("http://a.4cdn.org/%s/catalog.json" % board))
                 content
             except ValueError:
-                connection.privmsg(event.target(), "Error opening catalog")
-                return 0
+                connection.privmsg(event.target, "Error opening catalog")
+                return 1
             found_thread = 0
             output = []
             try:
@@ -80,10 +80,10 @@ class fourchan:
                             or search('(?i)%s' % search_term, subject)):
                             found_thread += 1
                             output.append("[Replies: %d] [Images: %d] http://boards.4chan.org/%s/res/%s - " % (athread["replies"], athread["images"], board, athread["no"]) + sub(r"(<([^>]+)>)", " ", athread["com"])[:50] )
-                connection.privmsg(event.target(), "Found %d threads containing keyword '%s':" % (found_thread, search_term))
+                connection.privmsg(event.target, "Found %d threads containing keyword '%s':" % (found_thread, search_term))
                 output = output[:self.threadCount] #The amount to show
                 for athread in output:
                     athread = (HTMLParser.HTMLParser().unescape(athread)).encode('utf-8')
-                    connection.privmsg(event.target(), athread)
+                    connection.privmsg(event.target, athread)
             except:
-                connection.privmsg(event.target(), "Invalid search syntax.")
+                connection.privmsg(event.target, "Invalid search syntax.")

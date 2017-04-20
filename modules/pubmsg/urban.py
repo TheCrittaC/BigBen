@@ -1,4 +1,4 @@
-import irclib
+import irc
 from urllib import urlopen
 import thread
 import json
@@ -17,13 +17,13 @@ class urban:
             return "Error retrieving definition for the term " + term + "."
             
     def on_pubmsg(self, nick, connection, event):
-        message = event.arguments()[0]
-        source = event.source().split('!')[0]
+        message = event.arguments[0]
+        source = event.source.split('!')[0]
         if message.startswith(".urban"):
             if len(message.split(' ')) == 2:
                 term = message.split(' ')[1]
                 defnum = 1
-                thread.start_new_thread(connection.privmsg, (event.target(), self.urban(term, defnum - 1)))
+                thread.start_new_thread(connection.privmsg, (event.target, self.urban(term, defnum - 1)))
                 #accounts for the special case of the term being a number
             else:
                 try:
@@ -32,6 +32,6 @@ class urban:
                     except:
                         defnum = 1
                     term = message.replace(".urban ", "").replace(" " + str(defnum), "")
-                    thread.start_new_thread(connection.privmsg, (event.target(), self.urban(term, defnum - 1)))
+                    thread.start_new_thread(connection.privmsg, (event.target, self.urban(term, defnum - 1)))
                 except Exception:
-                    thread.start_new_thread(connection.privmsg, (event.target(), "Usage: .urban word (definition number)"))
+                    thread.start_new_thread(connection.privmsg, (event.target, "Usage: .urban word (definition number)"))

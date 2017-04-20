@@ -1,4 +1,4 @@
-import irclib
+import irc
 #place all imports up here
 class test:
 #the name of your class

@@ -1,8 +1,7 @@
-__all__ = ["decide", "eat", "echo", "feet", "fortunes", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "rt", "roll", "sed", "shorten", "stock", "tell", "tz", "tweet", "weather", "urban", "youtube", "help"]
-__enabled__ = ["decide", "eat", "echo", "feet", "fortunes", "fourchan", "google", "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question","quote","roll", "rt", "sed", "shorten", "tell", "tz", "tweet", "urban", "weather", "youtube", "help"]
+__all__ = ["decide", "echo", "feet", "fortunes", "fourchan",  "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "sed", "shorten", "stock", "tz", "tweet", "weather", "urban", "youtube", "help",]
+__enabled__ = ["echo", "decide", "feet", "fortunes", "fourchan", "htmlconvert", "imdb", "isup", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "shorten", "stock", "weather", "urban", "youtube", "tweet", "tz", "help",]
 __commands__ = {
 	".decide" : "decide",
-	".eat" : "eat",
 	".echo" : "echo",
 	".feet" : "feet",
 	".fortune" : "fortunes",
@@ -23,29 +22,25 @@ __commands__ = {
 	".yt" : "youtube",
 	".tweet": "tweet",
 	".help" : "help",
-	".quote" : "quote"
+	".quote" : "quote" 
 }
 __help__ = {
 	"decide" : ".decide this or that or then - Returns one of the choices\n.flip - returns heads or tails, .flip 5 will also return the stats of 5 flips",
-	"eat" : ".eat Taylor Swift - Returns a link to wikieat",
 	"echo": ".echo hi - Bot will simply return hi",
 	"feet" : ".feet taylor swift - Return a link to wikifeet",
 	"fortunes" : ".fortune - Return your fortune",
-	"fourchan" : ".4chan BOARD SEARCH TERM - will search 4chan for threads",
-	"google" : ".g How to google - Google results",
-	"htmlconvert" : ".convert #ff0000 - Will convert into 255 0 0",
+	"fourchan" : ".4chan BOARD SEARCH_TERM - will search 4chan for threads",
+	"htmlconvert" : ".convert #ff0000 - Will convert into 255-0-0",
 	"imdb" : ".imdb MOVIE - Get year, rating, runtime, genre, plot for a movie",
 	"isup" : ".isup www.ravingrabbits.co.uk - Check if website is up",
 	"lastspoke" : ".seen USERNAME - Find when a user last spoke",
 	"nowplaying" : ".np TaylorSwift - Get a user's last playing from last.fm, username can be remembered with .np set TaylorSwift",
 	"ping" : ".ping - will return pong, .ding will return dong",
 	"question" : "saying BigBen, am I kawaii?? will trigger a response from set responses",
-	"rt" : ".rt film - Return title, year, runtime, rotten tomato rating, from rotten romatoes",
 	"roll" : ".roll - Roll a dice, .roll 20 will roll a 20 sided dice",
 	"sed" : ":s/a/b - will return the last matching message's a with b - closely follows the rules of GNU sed",
 	"shorten": ".shorten url - shorten a url",
 	"stock" : ".stock SYMBOL retrieves a stock quote for the specified stock symbol. This uses the Google Finance API",
-	"tell" : ".tell user I luv you ;) <3",
 	"tweet" : ".tweet TaylorSwift13 - get last tweet from user, if no user is defined the irc username will be used, .tweet TaylorSwift13 4, will return the fourth tweet",
 	"tz" : ".tz London - Return the timezone for any location", 
 	"weather" : ".w - return a weather of a location, .register_location someplace -will remember the location of given user, .f - will return a forecast",
