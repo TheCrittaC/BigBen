@@ -11,7 +11,7 @@ class bong:
     def getTime(self, ntpclient, ntpserver):
         response = ntpclient.request(ntpserver)
         return datetime.fromtimestamp(response.orig_time)
-    def __init__(self, parent,  connection):
+    def bong(self, parent, connection):
         ntpclient = ntplib.NTPClient()
         silentChannelsFile = open("./modules/static/NOBONGCHANNELS", 'r')
         self.silentChannels = silentChannelsFile.read().splitlines()
@@ -32,6 +32,8 @@ class bong:
                 if not channel in self.silentChannels:
                     connection.privmsg(channel, message)
             message = ""
+    def __init__(self, parent,  connection):
+        thread.start_new_thread(self.bong, (parent, connection))
 
         
 

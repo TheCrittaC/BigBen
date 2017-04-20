@@ -35,8 +35,6 @@ class Bot(bot.SingleServerIRCBot):
         self.password = password
         self.pubmodules = []
         self.amounts = amounts
-        if log == "yes":
-            thread.start_new_thread(self.setupLog, ()) #starts a new thread that sets up the users per channel
         self.array = []
         self.commandnicks = []
         self.responses = []
@@ -236,8 +234,6 @@ class Bot(bot.SingleServerIRCBot):
     def on_pubmsg (self, connection, event):
         message = event.arguments[0]
         source = event.source.split('!')[0]
-        print event.target
-        print "source is " + source
         if source + "\n" not in self.ignores:
             for module in self.pubmodules:
                 thread.start_new_thread(module.on_pubmsg, (self.nick, connection, event))
