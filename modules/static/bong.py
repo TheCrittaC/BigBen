@@ -9,8 +9,13 @@ import traceback
 
 class bong:
     def getTime(self, ntpclient, ntpserver):
-        response = ntpclient.request(ntpserver)
+        try:
+            response = ntpclient.request(ntpserver)
+        except:
+            sleep(10)
+            response = self.getTime(ntpclient, ntpserver)
         return datetime.fromtimestamp(response.orig_time)
+    
     def bong(self, parent, connection):
         ntpclient = ntplib.NTPClient()
         silentChannelsFile = open("./modules/static/NOBONGCHANNELS", 'r')

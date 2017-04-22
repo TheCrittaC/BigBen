@@ -1,6 +1,7 @@
 import irc
 import json
 import ntplib
+from time import sleep
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -32,6 +33,10 @@ class ChannelMessager(StreamListener):
             return
             
         return True
+    def on_error(self, status_code):
+        sleep(15)
+        return False
+    #wait 15 seconds before doing anything in case we are rate-limited
 
 
 class monitortwitter:
@@ -57,8 +62,13 @@ class monitortwitter:
         accessSecret = keyList[3]
         auth = OAuthHandler(consumerKey, consumerSecret)
         auth.set_access_token(accessKey, accessSecret)
-        stream = Stream(auth, cm)
-        stream.userstream(_with='followings')
+        while True:
+            stream = Stream(auth, cm, timeout=60)
+            try:
+                stream.userstream(_with='followings')
+            except:
+                print "Error, restarting stream"
+            
     def __init__(self, parent,  connection):
         thread.start_new_thread(self.monitor, (parent, connection))
 
