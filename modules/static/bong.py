@@ -14,7 +14,7 @@ class bong:
         except:
             sleep(10)
             response = self.getTime(ntpclient, ntpserver)
-        return datetime.fromtimestamp(response.orig_time)
+        return response
     
     def bong(self, parent, connection):
         ntpclient = ntplib.NTPClient()
@@ -22,14 +22,15 @@ class bong:
         self.silentChannels = silentChannelsFile.read().splitlines()
         silentChannelsFile.close()
         while 1:
-            currentTime = self.getTime(ntpclient, "pool.ntp.org")
+            timeFromNTP = self.getTime(ntpclient, "pool.ntp.org")
+            currentTime = datetime.fromtimestamp(timeFromNTP.orig_time)
             currentHour = int(currentTime.strftime("%I"))
             #12-hour current hour
             currentMin = int(currentTime.strftime("%M"))
             currentSec = int(currentTime.strftime("%S"))
             secondsToSleep = 3600 - (currentMin * 60) - currentSec
             sleep(secondsToSleep)
-            currentHour = currentHour + 1
+            currentHour = (currentHour % 12) + 1
             message = ""
             for i in range(currentHour):
                 message += "BONG "
