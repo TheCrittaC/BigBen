@@ -22,12 +22,13 @@ class tweet:
         
     def getTweets(self, username, number):
         try:
-            url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=" + str(number)
+            url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=" + str(number) + "&exclude_replies=true"
             response, data = self.client.request(url)
             tweetData = json.loads(data)[-1]
             if not tweetData['text']:
                 return "No tweets found on this page."
             tweet = tweetData['text']
+            tweet = tweet.replace('\r', ' ').replace('\n', ' ')
             name = tweetData['user']['name']
             handle = tweetData['user']['screen_name']
             time = tweetData['created_at'][:10]
