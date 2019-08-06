@@ -4,6 +4,7 @@ import json
 import thread
 import oauth2 as oauth
 import HTMLParser
+import re
 class tweet:
     def __init__(self):
         keyFile = open("modules/pubmsg/TwitterKeys", 'r')
@@ -19,23 +20,37 @@ class tweet:
         consumer = oauth.Consumer(key = consumerKey, secret = consumerSecret)
         accessToken = oauth.Token(key = accessKey, secret = accessSecret)
         self.client = oauth.Client(consumer, accessToken)
+    def formatTweet(self, tweetData):
+        if not tweetData['full_text']:
+            return "No tweets found on this page."
+        tweet = tweetData['full_text']
+        tweet = tweet.replace('\r', ' ').replace('\n', ' ')
+        name = tweetData['user']['name']
+        handle = tweetData['user']['screen_name']
+        time = tweetData['created_at'][:10]
+        tweet = (u"{0} :: @{1} :: {2} :: {3}".format(name, handle, time, tweet))
+        return HTMLParser.HTMLParser().unescape(tweet).encode('utf-8')
+    
+
         
-    def getTweets(self, username, number):
+    def getTweets(self, username, regex):
         try:
-            url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=" + str(number) + "&exclude_replies=true" + "&tweet_mode=extended"
+            int(regex)
+            url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=" + str(regex) + "&exclude_replies=false" + "&exclude_retweets=true" + "&tweet_mode=extended"
             response, data = self.client.request(url)
             tweetData = json.loads(data)[-1]
-            if not tweetData['full_text']:
-                return "No tweets found on this page."
-            tweet = tweetData['full_text']
-            tweet = tweet.replace('\r', ' ').replace('\n', ' ')
-            name = tweetData['user']['name']
-            handle = tweetData['user']['screen_name']
-            time = tweetData['created_at'][:10]
-            tweet = (u"{0} :: @{1} :: {2} :: {3}".format(name, handle, time, tweet))
-            return HTMLParser.HTMLParser().unescape(tweet).encode('utf-8')
-                #gets the nth tweet from the user's page
+            return self.formatTweet(tweetData)
+        except ValueError:
+	    url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + username + "&count=20&exclude_replies=false" + "&exclude_retweets=true" + "&tweet_mode=extended"
+            response, data = self.client.request(url)
+            for tweetData in json.loads(data):
+                tweetText = HTMLParser.HTMLParser().unescape(tweetData['full_text']).encode('utf-8')
+                if (re.search(regex, tweetText, re.IGNORECASE)):
+                    return self.formatTweet(tweetData);
+            return "No match for regex " + regex + " in user @" + username + "'s last twenty tweets."
+                
         except:
+            print regex
             return "Error retrieving that user's tweets. Perhaps the account is suspended?"
             # accounts for a 401 error
         
@@ -49,8 +64,8 @@ class tweet:
             else:
                 username = message.split(' ')[1]
             try:
-                thread.start_new_thread(connection.privmsg, (event.target, self.getTweets(username, int(message.split(' ')[2]))))
+                thread.start_new_thread(connection.privmsg, (event.target, self.getTweets(username, message.split(' ')[2])))
                     #tries to get the nth tweet
-            except Exception:
+            except IndexError:
                 thread.start_new_thread(connection.privmsg, (event.target, self.getTweets(username, 1)))
                     #if n is not specified, we get the first tweet
