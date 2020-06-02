@@ -22,7 +22,7 @@ class tweetTitle:
         self.client = oauth.Client(consumer, accessToken)
         
     def getTweet(self, tweetId):
-        url = "https://api.twitter.com/1.1/statuses/show.json?id=" + str(tweetId)
+        url = "https://api.twitter.com/1.1/statuses/show.json?id=" + str(tweetId) + "&tweet_mode=extended"
         response, data = self.client.request(url)
         tweetData = json.loads(data)
         return tweetData
@@ -36,7 +36,7 @@ class tweetTitle:
             tweet = self.getTweet(tweetId)
             try:
                 accountName = tweet['user']['name']
-                tweetText = tweet['text']
+                tweetText = tweet['full_text']
                 connection.privmsg(event.target, accountName + ": " + tweetText)
             except KeyError:
                 connection.privmsg(event.target, "Unable to find tweet.")
