@@ -36,8 +36,9 @@ class tweetTitle:
             tweet = self.getTweet(tweetId)
             try:
                 accountName = tweet['user']['name']
-                tweetText = tweet['full_text']
-                connection.privmsg(event.target, accountName + ": " + tweetText)
+                tweetText = HTMLParser.HTMLParser().unescape(tweet['full_text']).encode('utf-8').replace("\n", ' ')
+                message = u"\u000332{0}: \u000334{1}".format(accountName, tweetText)
+                connection.privmsg(event.target, message)
             except KeyError:
                 connection.privmsg(event.target, "Unable to find tweet.")
                 
