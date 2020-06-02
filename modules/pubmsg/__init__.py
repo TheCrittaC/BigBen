@@ -1,5 +1,5 @@
-__all__ = ["decide", "echo", "fortunes", "fourchan",  "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "sed", "shorten", "stock", "tz", "tweet", "weather", "urban", "youtube", "help",]
-__enabled__ = ["echo", "decide", "fortunes", "fourchan", "htmlconvert", "imdb", "isup", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "shorten", "stock", "weather", "urban", "youtube", "tweet", "tz", "help",]
+__all__ = ["decide", "echo", "fortunes", "fourchan",  "htmlconvert", "imdb", "isup", "lastspoke", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "sed", "shorten", "stock", "tz", "tweet", "weather", "urban", "youtube", "help", "tweetTitle"]
+__enabled__ = ["echo", "decide", "fortunes", "fourchan", "htmlconvert", "imdb", "isup", "nowplaying", "pagetitle", "ping", "question", "quote", "roll", "shorten", "stock", "weather", "urban", "youtube", "tweet", "tz", "help", "tweetTitle"]
 __commands__ = {
 	".decide" : "decide",
 	".echo" : "echo",
